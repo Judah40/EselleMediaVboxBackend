@@ -1,17 +1,15 @@
 const jwt = require("jsonwebtoken");
-
-const generateUsersJwtAccessToken = (user) => {
+const { jwtSecret } = require("../../config/default.config");
+const generateUsersJwtAccessToken = (user, userRole) => {
   const paylod = {
     id: user,
+    role: userRole,
   };
+  console.log(paylod);
   try {
-    return jwt.sign(
-      paylod,
-      "",
-      {
-        expiresIn: "1d",
-      }
-    );
+    return jwt.sign(paylod, jwtSecret, {
+      expiresIn: "1d",
+    });
   } catch (error) {
     console.error(error);
     throw error;

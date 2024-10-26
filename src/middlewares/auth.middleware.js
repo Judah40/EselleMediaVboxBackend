@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { jwtSecret } = require("../config/default.config");
 
+////////////////////////////////////////////////////////////////////////////////////////////
+//GET AUTH TOKEN
 const getAuthToken = (req) => {
   try {
     const authHeader = req.headers.authorization || null;
@@ -17,6 +19,8 @@ const getAuthToken = (req) => {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////
+//VERIFY JWT TOKEN
 const requireAuthenticatedUser = async (req, res, next) => {
   try {
     const token = getAuthToken(req);
@@ -27,10 +31,7 @@ const requireAuthenticatedUser = async (req, res, next) => {
         .json({ message: "Invalid/Missing Authentication Token" });
     }
 
-    const decodedToken = jwt.verify(
-      token,
-      ""
-    );
+    const decodedToken = jwt.verify(token, jwtSecret);
 
     req.user = {
       id: decodedToken.id,
@@ -54,6 +55,38 @@ const requireAuthenticatedUser = async (req, res, next) => {
   }
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//REQUIRE ADMIN PRIVILDGE
+const requireAdminPriviledge = async (req, res, next) => {
+  try {
+    const token = getAuthToken(req);
+
+    if (!token) {
+      return res
+        .status(400)
+        .json({ message: "Invalid/Missing Authentication Token" });
+    }
+
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    req.user = {
+      id: decodedToken.id,
+      role: decodedToken.role,
+    };
+    if (decodedToken.role === "Admin") {
+      return next();
+    } else {
+      return res.status(404).json({
+        message: "You are not authorized to access this resource",
+        statusCode: 404,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
 module.exports = {
   requireAuthenticatedUser,
+  requireAdminPriviledge,
 };

@@ -7,7 +7,7 @@ const {
   handleRegisterUserController,
   handleLoginUserController,
   handleAuthenticateUserController,
-  handleEditUserProfileController,
+  handleUpdateUserProfileController,
   handlegGetUserProfileController,
   handlePasswordSetupController,
   handleOTPverificationController,
@@ -48,6 +48,10 @@ router.get(
   handlegGetUserProfileController
 );
 //edit user profile
-router.put("/profile", handleEditUserProfileController);
+router.put(
+  "/profile",
+  requireAuthenticatedUser,
+  handleUpdateUserProfileController
+);
 
 module.exports = router;

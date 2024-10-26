@@ -18,22 +18,22 @@ const {
 //   clientMinMessages: "notice",
 // });
 
-const sequelize = new Sequelize("vboxesselle", "postgres", "RosieDore123@", {
-    dialect: "postgres",
-    host: "localhost",
-  });
+const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
+  dialect: "postgres",
+  host: dbUrl,
+});
 //CONNECT TO DB
 const connectDB = async (app) => {
   try {
     if (app) {
       await sequelize.sync();
       console.log("Database connected successfully");
-      app.listen(4000, () => {
-        console.log(`🚀 Server Listening on http://3000`);
+      app.listen(appPort, () => {
+        console.log(`🚀 Server Listening on port ${appPort}`);
       });
     }
   } catch (error) {
     console.error("❌ Postgres connection error:", error.message);
   }
 };
-module.exports = {connectDB, sequelize};
+module.exports = { connectDB, sequelize };

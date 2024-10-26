@@ -108,14 +108,17 @@ exports.handleLoginUserController = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid email" });
     }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ error: "Password is Invalid." });
     }
-    const token = generateUsersJwtAccessToken(user.id);
+    const token = generateUsersJwtAccessToken(user.id, user.role);
 
-    res.json({ message: "Login successful", token });
+    res.json({
+      message: "Login successful",
+      token: token,
+      userType: user.role,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
@@ -141,7 +144,17 @@ exports.handlegGetUserProfileController = async (req, res) => {
   try {
     const { id } = req.user;
     const user = await UserModel.findByPk(id, {
-      attributes: { exclude: ["password"] },
+      attributes: {
+        exclude: [
+          "password",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "otp",
+          "id",
+          "role",
+        ],
+      },
     });
 
     if (!user) {
@@ -161,4 +174,55 @@ exports.handlegGetUserProfileController = async (req, res) => {
 };
 ////////////////////////////////////////////////////////////////////////////
 //EDIT USER PROFILE CONTROLLER
-exports.handleEditUserProfileController = async (req, res) => {};
+exports.handleUpdateUserProfileController = async (req, res) => {
+  try {
+    const {
+      firstName,
+      middleName,
+      lastName,
+      username,
+      dateOfBirth,
+      gender,
+      email,
+      address,
+      phoneNumber,
+    } = req.body;
+    const { id } = req.user;
+    const user = await UserModel.findByPk(id, {
+      attributes: {
+        exclude: [
+          "password",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "otp",
+          "id",
+          "role",
+        ],
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await UserModel.update(
+      {
+        firstName: firstName || user.firstName,
+        middleName: middleName || user.middleName,
+        lastName: lastName || user.lastName,
+        username: username || user.username,
+        email: email || user.email,
+        phoneNumber: phoneNumber || user.phoneNumber,
+        address: address || user.address,
+        gender: gender || user.gender,
+        dateOfBirth: dateOfBirth || user.dateOfBirth,
+      },
+      { where: { id: id } }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Profile updated successfully", statusCode: 200 });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
