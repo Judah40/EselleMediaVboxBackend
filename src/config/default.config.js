@@ -9,6 +9,10 @@ const {
   DB_PORT,
   APP_URL,
   JWT_SECRET,
+  BUCKET_NAME,
+  BUCKET_REGION,
+  ACCESS_KEY,
+  SECRET_ACCESS_KEY,
 } = process.env;
 
 module.exports = {
@@ -20,4 +24,8 @@ module.exports = {
   dbPort: DB_PORT,
   dbUsername: DB_USERNAME,
   dbPassword: DB_PASSWORD,
+  awsBucketName: BUCKET_NAME,
+  awsBucketRegion: BUCKET_REGION,
+  awsAccessKey: ACCESS_KEY,
+  awsSecretAccessKey: SECRET_ACCESS_KEY,
 };

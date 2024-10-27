@@ -51,6 +51,10 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
+    profile_picture: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     otp: {
       type: Sequelize.STRING,
       allowNull: true,

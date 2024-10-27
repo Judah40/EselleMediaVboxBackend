@@ -5,6 +5,11 @@ const {
   generateUsersJwtAccessToken,
 } = require("../utils/generators/tokenGenerator");
 const bcrypt = require("bcrypt");
+const {
+  handleUploadImageToAWSs3bucket,
+  handleGetUploadedMediaFromAWSs3Bucket,
+} = require("./awsController");
+const { randomName } = require("../utils/generators/generateRandomNames");
 ////////////////////////////////////////////////////////////////////////////
 //REGISTER USER CONTROLLER
 exports.handleRegisterUserController = async (req, res) => {
@@ -225,4 +230,90 @@ exports.handleUpdateUserProfileController = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//HANDLE UPLOAD PROFILE PICTURE
+exports.handleUploadProfilePictureController = async (req, res) => {
+  try {
+    const { mimetype, buffer } = req.file;
+    const { id } = req.user;
+    console.log(req.file);
+
+    await handleUploadImageToAWSs3bucket(randomName(), buffer, mimetype)
+      .then(async (value) => {
+        const updateProfilePic = await UserModel.update(
+          {
+            profile_picture: randomName(),
+          },
+          { where: { id: id } }
+        );
+        if (updateProfilePic) {
+          return res.status(200).json({
+            message: "Profile picture updated successfully",
+            status: 200,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+////////////////////////////////////////////////////////////////////////////
+//HANDLE GET PROFILE PROFILE PICTURE
+exports.handleGetProfilePictureController = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const profilePicture = await UserModel.findOne({ id });
+    if (profilePicture) {
+      const profilePictureUrl = await handleGetUploadedMediaFromAWSs3Bucket(
+        profilePicture.profile_picture
+      );
+      return res
+        .status(200)
+        .json({ profilePictureUrl: profilePictureUrl, status: 200 });
+      // return res.send({
+      //   profilePicture: profilePicture.profile_picture,
+      // });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+////////////////////////////////////////////////////////////////////////////
+//HANDLE UPDATE PROFILE PICTURE
+exports.handleUpdateProfilePicController = async (req, res) => {
+  try {
+    const { mimetype, buffer } = req.file;
+    const { id } = req.user;
+    const { profile_picture } = await UserModel.findOne({ id });
+    if (profile_picture) {
+      await handleUploadImageToAWSs3bucket(profile_picture, buffer, mimetype)
+        .then((value) => {
+          console.log(value);
+          return res.status(200).json({
+            message: "Profile picture updated successfully",
+            status: 200,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//HANDLE DELETE PROFILE PICTURE
+exports.handleDeleteProfilePicController = async (req, res) => {
+  return res.send({
+    message: "in development",
+  });
+  try {
+  } catch (error) {}
 };
