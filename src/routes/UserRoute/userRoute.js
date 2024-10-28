@@ -41,7 +41,7 @@ router.post(
 router.post("/register", userDetailsValidator, handleRegisterUserController);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //LOGIN USER
-router.post("/login", userLoginValidator, handleLoginUserController);
+router.post("/login",  handleLoginUserController);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //AUTHENTICATE USER
 router.post(

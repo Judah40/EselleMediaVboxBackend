@@ -1,11 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const { handleCreatingPost,handleGetSinglePost,handleGetAllPosts } = require("../../controllers/postController");
+const {
+  handleCreatingPost,
+  handleGetSinglePost,
+  handleGetAllPosts,
+} = require("../../controllers/postController");
 const { requireAdminPriviledge } = require("../../middlewares/auth.middleware");
 const { postValidator } = require("../../utils/validators/postValidatorSchema");
+const {uploadMediaMiddleware} = require("../../utils/File/mutipleUploads")
 ///////////////////////////////////////////////////////////////////////////////////////////
 //CREATE POST ROUTE
-router.post("/", requireAdminPriviledge, postValidator, handleCreatingPost);
+router.post(
+  "/",
+  requireAdminPriviledge,
+  uploadMediaMiddleware,
+  postValidator,
+  handleCreatingPost
+);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST ROUTE
 router.get("/:id", handleGetSinglePost);

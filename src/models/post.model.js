@@ -41,6 +41,18 @@ const Post = sequelize.define(
       type: Sequelize.TEXT,
       allowNull: false,
     },
+    thumbnailUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    bannerUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    videoUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
     caption: {
       type: Sequelize.STRING,
       allowNull: false,

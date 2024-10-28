@@ -109,6 +109,7 @@ exports.handlePasswordSetupController = async (req, res) => {
 exports.handleLoginUserController = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email);
     const user = await UserModel.findOne({ where: { email: email } });
     if (!user) {
       return res.status(400).json({ message: "Invalid email" });
