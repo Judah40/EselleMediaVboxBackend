@@ -21,12 +21,12 @@ const {
 const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
   dialect: "postgres",
   host: dbUrl,
-  dialectOptions: {
-    ssl: {
-      require: true, // This will help you. But you will see nwe error
-      rejectUnauthorized: false // This line will fix new error
-    }
-  },
+  // dialectOptions: {
+  //   ssl: {
+  //     require: true, // This will help you. But you will see nwe error
+  //     rejectUnauthorized: false // This line will fix new error
+  //   }
+  // },
 });
 //CONNECT TO DB
 const connectDB = async (app) => {

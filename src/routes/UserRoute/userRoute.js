@@ -90,4 +90,10 @@ router.put(
   handleUpdateProfilePicController
 );
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//GET ALL USERS PROFILE ROUTE
+
+
 module.exports = router;
