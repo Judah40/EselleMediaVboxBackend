@@ -1,6 +1,11 @@
 const { Post } = require("../models/post.model");
 const { randomName } = require("../utils/generators/generateRandomNames");
-const {handleUploadImageToAWSs3bucket} = require("../controllers/awsController")
+const {
+  handleUploadImageToAWSs3bucket,
+  handleGetUploadedMediaFromAWSs3Bucket,
+  handleGetMultipleUploadedMediaFromAWSs3Bucket,
+} = require("../controllers/awsController");
+const sharp = require("sharp");
 ////////////////////////////////////////////////////////////////////////////
 //CREATE POST
 exports.handleCreatingPost = async (req, res) => {
@@ -13,27 +18,23 @@ exports.handleCreatingPost = async (req, res) => {
     const banner = req.files["banner"] ? req.files["banner"][0] : null;
     const fullVideo = req.files["fullVideo"] ? req.files["fullVideo"][0] : null;
 
-    // return res.status(200).json({
-    //   content,
-    //   caption,
-    //   tags,
-    //   location,
-    //   //   thumbnails,
-    //   //   banner,
-    //   fullVideo,
-    // });
-
     const thumbnailName = randomName();
     const bannerName = randomName();
     const fullVideoName = randomName();
-    // return res.status(200).json({
-    //   thumbnailName,
-    //   bannerName,
-    //   fullVideoName,
-    // });
+
+    const resizedThumbnail = await sharp(thumbnails.buffer)
+      .resize({
+        height: 150,
+        width: 150,
+        fit: "contain",
+      })
+      .toBuffer();
+    const resizedBanner = await sharp(banner.buffer)
+      .resize({ height: 1080, width: 1920, fit: "contain" })
+      .toBuffer();
     await handleUploadImageToAWSs3bucket(
       bannerName,
-      banner.buffer,
+      resizedBanner,
       banner.mimetype
     );
     await handleUploadImageToAWSs3bucket(
@@ -43,7 +44,7 @@ exports.handleCreatingPost = async (req, res) => {
     );
     await handleUploadImageToAWSs3bucket(
       thumbnailName,
-      thumbnails.buffer,
+      resizedThumbnail,
       thumbnails.mimetype
     );
     const { id } = req.user;
@@ -71,14 +72,28 @@ exports.handleGetSinglePost = async (req, res) => {
   try {
     const id = req.params.id;
     const post = await Post.findOne({ where: { id: id } });
+
     if (!post) {
       return res.status(404).json({
         message: "Post not found",
         statusCode: 404,
       });
     }
+    const thumbnailUrl = await handleGetUploadedMediaFromAWSs3Bucket(
+      post.thumbnailUrl
+    );
+    const bannerUrl = await handleGetUploadedMediaFromAWSs3Bucket(
+      post.bannerUrl
+    );
+    const videoUrl = await handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl);
+    const updatedPost = {
+      ...post.toJSON(),
+      thumbnailUrl,
+      bannerUrl,
+      videoUrl,
+    };
     return res.status(200).json({
-      post: post,
+      post: updatedPost,
       statusCode: 200,
     });
   } catch (error) {
@@ -91,15 +106,42 @@ exports.handleGetSinglePost = async (req, res) => {
 exports.handleGetAllPosts = async (req, res) => {
   try {
     const { id } = req.user;
-    const posts = await Post.findAll({ where: { userId: id } });
-    if (!posts) {
+    // Fetch all posts from the database
+    const posts = await Post.findAll();
+
+    // console.log(posts)
+    if (!posts || posts.length === 0) {
       return res.status(404).json({
+        success: false,
         message: "No posts found",
-        statusCode: 404,
       });
     }
-    return res.status(200).json({
-      post: posts,
+
+    // const updatedPosts = [];
+
+    // Process all posts in parallel
+    const updatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        // Fetch URLs for thumbnail, banner, and video in parallel
+        const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
+          handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
+        ]);
+
+        // Return the updated post object
+        return {
+          ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
+          thumbnailUrl,
+          bannerUrl,
+          videoUrl,
+        };
+      })
+    );
+
+    // res.send({updatedPosts});
+    res.status(200).json({
+      post: updatedPosts,
       statusCode: 200,
     });
   } catch (error) {

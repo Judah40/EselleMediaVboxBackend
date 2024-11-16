@@ -10,6 +10,8 @@ const userRoute = require("./routes/UserRoute/userRoute");
 const postRoute = require("./routes/PostRoute/postRoute");
 const streamRoute = require("./routes/StreamRoute/streamRoute");
 const liveStreamRoute = require("./routes/LiveStreamDataRoute/LiveStreamDataRoute");
+const commentRoute = require("./routes/CommentRoute/userComment");
+const AdminUserRoute = require("./routes/AdminRoute/UserRoute/userRoute");
 const {
   authenticateWebSocketUser,
 } = require("./middlewares/webSocket.middleware");
@@ -20,12 +22,14 @@ app.use(cors());
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", requireAuthenticatedUser, postRoute);
 app.use("/api/v1/stream", requireAdminPriviledge, streamRoute);
-app.use("/api/v1/live", requireAdminPriviledge, liveStreamRoute);
+app.use("/api/v1/live", requireAuthenticatedUser, liveStreamRoute);
+app.use("/api/v1/comment", requireAuthenticatedUser, commentRoute);
+app.use("/api/v1/admin", requireAdminPriviledge, AdminUserRoute);
 const server = http.createServer(app);
 const socketIo = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "PATCH"],
     credentials: true,
   },
 });

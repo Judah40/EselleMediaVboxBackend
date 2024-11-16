@@ -1,5 +1,6 @@
+const { Likes } = require("../models/like.model");
 const { Live } = require("../models/live.model");
-
+const { randomDelay } = require("../utils/Delay/delay");
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE LIVE STREAM DATA CONTROLLER
 exports.handleCreateLiveStream = async (req, res) => {
@@ -89,3 +90,52 @@ exports.handleGetSingleLiveStream = async (req, res) => {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // UPDATE LIVE STREAM DATA CONTROLLER
 exports.handleUpdateLiveStream = (req, res) => {};
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// UPDATE LIKE COUNTER
+exports.handleUpdateLikeCounter = async (req, res) => {
+  const like = 1;
+  const { id } = req.user;
+  const { liveId } = req.params;
+  try {
+    const liveData = await Live.findOne({
+      where: {
+        liveId: liveId,
+      },
+    });
+
+    if (liveData) {
+      const userAlreadyLiked = await Likes.findOne({
+        where: { userId: id },
+      });
+      if (!userAlreadyLiked) {
+        const likedCreated = await Likes.create({
+          userId: id,
+          like: like,
+          liveId: liveId,
+        });
+        if (likedCreated) {
+          randomDelay();
+          await Live.increment("likeCount", {
+            by: 1,
+            where: { liveId: liveId },
+          });
+          return res.status(200).json({ message: "liked successfully" });
+        }
+      }
+      randomDelay();
+      await userAlreadyLiked.destroy();
+      await Live.increment("likeCount", {
+        by: -1,
+        where: { liveId: liveId },
+      });
+      return res.status(200).json({ message: "liked removed" });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating live stream",
+      error: error,
+      status: error.status,
+    });
+  }
+};
