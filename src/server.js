@@ -6,6 +6,7 @@ const Post = require("./models/post.model");
 const Live = require("./models/live.model");
 const Comment = require("./models/comment.model");
 const like = require("./models/like.model");
+const message  = require("./models/message.model")
 const startServer = async () => {
   connectDB(app);
 };

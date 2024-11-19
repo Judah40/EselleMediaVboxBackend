@@ -6,6 +6,8 @@ const {
   handleGetMultipleUploadedMediaFromAWSs3Bucket,
 } = require("../controllers/awsController");
 const sharp = require("sharp");
+const { Op } = require("sequelize");
+const { sequelize } = require("../config/database");
 ////////////////////////////////////////////////////////////////////////////
 //CREATE POST
 exports.handleCreatingPost = async (req, res) => {
@@ -66,6 +68,45 @@ exports.handleCreatingPost = async (req, res) => {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////
+//GET ALL POST BY GENRE
+exports.handleGetAllPostsByGenre = async (req, res) => {
+  const { genre } = req.params;
+  try {
+    const postsByGenre = await Post.findAll({
+      where: sequelize.where(sequelize.cast(sequelize.col("tags"), "text[]"), {
+        [Op.contains]: [genre],
+      }),
+    });
+
+    const updatedPosts = await Promise.all(
+      postsByGenre.map(async (post) => {
+        // Fetch URLs for thumbnail, banner, and video in parallel
+        const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
+          handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
+        ]);
+
+        // Return the updated post object
+        return {
+          ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
+          thumbnailUrl,
+          bannerUrl,
+          videoUrl,
+        };
+      })
+    );
+
+    // res.send({updatedPosts});
+    res.status(200).json({
+      post: updatedPosts,
+      statusCode: 200,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
 ////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST
 exports.handleGetSinglePost = async (req, res) => {

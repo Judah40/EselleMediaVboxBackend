@@ -4,10 +4,11 @@ const {
   handleCreatingPost,
   handleGetSinglePost,
   handleGetAllPosts,
+  handleGetAllPostsByGenre,
 } = require("../../controllers/postController");
 const { requireAdminPriviledge } = require("../../middlewares/auth.middleware");
 const { postValidator } = require("../../utils/validators/postValidatorSchema");
-const {uploadMediaMiddleware} = require("../../utils/File/mutipleUploads")
+const { uploadMediaMiddleware } = require("../../utils/File/mutipleUploads");
 ///////////////////////////////////////////////////////////////////////////////////////////
 //CREATE POST ROUTE
 router.post(
@@ -17,6 +18,9 @@ router.post(
   postValidator,
   handleCreatingPost
 );
+///////////////////////////////////////////////////////////////////////////////////////////
+//GET POSTS BY GENRE
+router.get("/genre/:genre", handleGetAllPostsByGenre);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST ROUTE
 router.get("/:id", handleGetSinglePost);

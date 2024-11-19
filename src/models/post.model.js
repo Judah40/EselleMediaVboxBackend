@@ -70,7 +70,7 @@ const Post = sequelize.define(
       defaultValue: false,
     },
     tags: {
-      type: Sequelize.ARRAY(Sequelize.STRING),
+      type: Sequelize.ARRAY(Sequelize.TEXT),
       allowNull: false,
     },
     location: {
