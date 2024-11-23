@@ -13,6 +13,7 @@ const liveStreamRoute = require("./routes/LiveStreamDataRoute/LiveStreamDataRout
 const commentRoute = require("./routes/CommentRoute/userComment");
 const AdminUserRoute = require("./routes/AdminRoute/UserRoute/userRoute");
 const messageRoute = require("./routes/MessageRoute/messageRoute");
+const favoritesRoute = require("./routes/Favorite/favoriteRoute");
 const {
   authenticateWebSocketUser,
 } = require("./middlewares/webSocket.middleware");
@@ -27,6 +28,7 @@ app.use("/api/v1/live", requireAuthenticatedUser, liveStreamRoute);
 app.use("/api/v1/comment", requireAuthenticatedUser, commentRoute);
 app.use("/api/v1/admin", requireAdminPriviledge, AdminUserRoute);
 app.use("/api/v1/message", messageRoute);
+app.use("/api/v1/favorite", requireAuthenticatedUser, favoritesRoute);
 const server = http.createServer(app);
 const socketIo = new Server(server, {
   cors: {
