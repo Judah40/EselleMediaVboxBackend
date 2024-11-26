@@ -16,7 +16,7 @@ const config = {
     mediaroot: "./media",
   },
   trans: {
-    ffmpeg: "/usr/local/bin/ffmpeg", // Set the correct ffmpeg path here
+    ffmpeg: "/usr/bin/ffmpeg", // Set the correct ffmpeg path here
     tasks: [
       {
         app: "live",
