@@ -4,7 +4,7 @@ const User = require("../../../models/user.model");
 
 //DEACTIVATE USER CONTROLLER
 exports.handleDeactivateUser = async (req, res) => {
-  const { id } =req.params;
+  const { id } = req.params;
   try {
     const userExists = await User.findOne({ where: { id: id } });
     if (!userExists) {
@@ -94,11 +94,26 @@ exports.handleGetSingleUser = async (req, res) => {
 //GET ALL USERS CONTROLLER
 exports.handleGetAllUsers = async (req, res) => {
   try {
-    const allUsers = await User.findAll();
-    res.status(200).json({
-      data: allUsers,
-      message: " users found",
-    });
+    const { id } = req.params;
+    // res.send(id);
+    if (Number(id) === 1) {
+      const allUsers = await User.findAll({
+        where: { isActive: true },
+      });
+      res.status(200).json({
+        data: allUsers,
+        message: " users found",
+      });
+    }
+    if (Number(id) === Number(2)) {
+      const allUsers = await User.findAll({
+        where: { isActive: false },
+      });
+      res.status(200).json({
+        data: allUsers,
+        message: " users found",
+      });
+    }
   } catch (error) {
     res.status(500).json({
       error: error,
