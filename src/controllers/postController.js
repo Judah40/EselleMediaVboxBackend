@@ -8,6 +8,7 @@ const {
 const sharp = require("sharp");
 const { Op } = require("sequelize");
 const { sequelize } = require("../config/database");
+const { Favorite } = require("../models/favorite.model");
 ////////////////////////////////////////////////////////////////////////////
 //CREATE POST
 exports.handleCreatingPost = async (req, res) => {
@@ -159,6 +160,7 @@ exports.handleGetAllPosts = async (req, res) => {
     }
 
     // const updatedPosts = [];
+    ////////////////////////////////////////////////////////////////////////////
 
     // Process all posts in parallel
     const updatedPosts = await Promise.all(
@@ -188,4 +190,49 @@ exports.handleGetAllPosts = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET ALL POST BY Favorite
+exports.handleGetAllPostByFavorite = async (req, res) => {
+  const { id } = req.user;
+
+  try {
+    const favorites = await Favorite.findOne({
+      where: { userId: id },
+    });
+    if (!favorites) {
+      console.log(favorites);
+      return res.status(404).json({
+        success: false,
+        message: "No favorites found",
+        statusCode: 404,
+      });
+    }
+    const favoritePosts = await Post.findAll({
+      where: sequelize.where(sequelize.cast(sequelize.col("tags"), "text[]"), {
+        [Op.contains]: [favorites.favorites],
+      }),
+    });
+    if (favoritePosts.length + 1 > 0) {
+      return res.status(200).json({
+        message: "Successfully gotten posts by favorites",
+        statusCode: 200,
+        data: favoritePosts,
+      });
+    }
+
+    const posts = await Post.findAll();
+    return res.status(200).json({
+      message: "No posts found",
+      statusCode: 200,
+      data: posts,
+    });
+    // res.send(id);
+    // return res.status(200).json({ favorites });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+
+  // Favorite;
 };

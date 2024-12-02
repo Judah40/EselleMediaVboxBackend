@@ -5,8 +5,12 @@ const {
   handleGetSinglePost,
   handleGetAllPosts,
   handleGetAllPostsByGenre,
+  handleGetAllPostByFavorite,
 } = require("../../controllers/postController");
-const { requireAdminPriviledge } = require("../../middlewares/auth.middleware");
+const {
+  requireAdminPriviledge,
+  requireAuthenticatedUser,
+} = require("../../middlewares/auth.middleware");
 const { postValidator } = require("../../utils/validators/postValidatorSchema");
 const { uploadMediaMiddleware } = require("../../utils/File/mutipleUploads");
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -24,6 +28,9 @@ router.get("/genre/:genre", handleGetAllPostsByGenre);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST ROUTE
 router.get("/:id", handleGetSinglePost);
+///////////////////////////////////////////////////////////////////////////////////////////
+//READ ALL POST BY FAVORITE ROUTE
+router.get("/favorites/all", requireAuthenticatedUser, handleGetAllPostByFavorite);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST ROUTE
 router.get("/", handleGetAllPosts);
