@@ -9,7 +9,7 @@ exports.handleCreateFavorites = async (req, res) => {
 
   try {
     const favoriteAlreadyExists = Favorite.findOne({
-      where: { id: id },
+      where: { userId: id },
     });
     if (favoriteAlreadyExists) {
       return res.status(409).json({ message: "Favorite already added" });
