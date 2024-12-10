@@ -12,7 +12,12 @@ exports.handleCreateFavorites = async (req, res) => {
       where: { userId: id },
     });
     if (favoriteAlreadyExists) {
-      return res.status(409).json({ message: "Favorite already added" });
+      return res
+        .status(409)
+        .json({
+          message: "Favorite already added",
+          data: favoriteAlreadyExists,
+        });
     }
     const favoritesAdded = await Favorite.create({
       userId: id,
