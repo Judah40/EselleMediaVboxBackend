@@ -241,11 +241,13 @@ exports.handleUploadProfilePictureController = async (req, res) => {
     const { id } = req.user;
     console.log(req.file);
 
-    await handleUploadImageToAWSs3bucket(randomName(), buffer, mimetype)
+    const randomNameValue = randomName(); // Generate the random name once
+
+    await handleUploadImageToAWSs3bucket(randomNameValue, buffer, mimetype)
       .then(async (value) => {
         const updateProfilePic = await UserModel.update(
           {
-            profile_picture: randomName(),
+            profile_picture: randomNameValue,
           },
           { where: { id: id } }
         );
@@ -318,6 +320,3 @@ exports.handleDeleteProfilePicController = async (req, res) => {
   try {
   } catch (error) {}
 };
-
-
-
