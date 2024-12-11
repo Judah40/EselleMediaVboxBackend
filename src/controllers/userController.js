@@ -176,7 +176,6 @@ exports.handlegGetUserProfileController = async (req, res) => {
           "isDeleted",
           "otp",
           "id",
-          "role",
         ],
       },
     });
