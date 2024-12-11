@@ -10,8 +10,8 @@ const {
   handleGetUploadedMediaFromAWSs3Bucket,
 } = require("./awsController");
 const { randomName } = require("../utils/generators/generateRandomNames");
-const sendOTP = require("../utils/sms/sendOTP");
-const { sendSMS } = require("../utils/sms/textBelt");
+// const sendOTP = require("../utils/sms/sendOTP");
+// const { sendSMS } = require("../utils/sms/textBelt");
 ////////////////////////////////////////////////////////////////////////////
 //REGISTER USER CONTROLLER
 exports.handleRegisterUserController = async (req, res) => {
@@ -65,14 +65,14 @@ exports.handleRegisterUserController = async (req, res) => {
       //   .catch((error) => {
       //     console.error("Failed to send OTP:", error);
       //   });
-      const message = `Your OTP code is: ${otp}`;
-      await sendSMS(phoneNumber, message)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      // const message = `Your OTP code is: ${otp}`;
+      // await sendSMS(phoneNumber, message)
+      //   .then((response) => {
+      //     console.log(response);
+      //   })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
       return res.status(201).json({
         message: `User Accout Created Successfully. Verify Account with the following OTP: ${otp}`,
       });
