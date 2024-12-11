@@ -9,6 +9,9 @@ const sharp = require("sharp");
 const { Op } = require("sequelize");
 const { sequelize } = require("../config/database");
 const { Favorite } = require("../models/favorite.model");
+const {
+  attribute,
+} = require("@sequelize/core/_non-semver-use-at-your-own-risk_/expression-builders/attribute.js");
 ////////////////////////////////////////////////////////////////////////////
 //CREATE POST
 exports.handleCreatingPost = async (req, res) => {
@@ -149,7 +152,18 @@ exports.handleGetAllPosts = async (req, res) => {
   try {
     const { id } = req.user;
     // Fetch all posts from the database
-    const posts = await Post.findAll();
+    const posts = await Post.findAll({
+      attributes: {
+        exclude: [
+          "videoUrl",
+          "userId",
+          "createdAt",
+          "updatedAt",
+          "isPublic",
+          "isDeleted",
+        ],
+      },
+    });
 
     // console.log(posts)
     if (!posts || posts.length === 0) {
@@ -166,10 +180,9 @@ exports.handleGetAllPosts = async (req, res) => {
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
         // Fetch URLs for thumbnail, banner, and video in parallel
-        const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
+        const [thumbnailUrl, bannerUrl] = await Promise.all([
           handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
           handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
-          handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
         ]);
 
         // Return the updated post object
@@ -177,7 +190,6 @@ exports.handleGetAllPosts = async (req, res) => {
           ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
           thumbnailUrl,
           bannerUrl,
-          videoUrl,
         };
       })
     );
