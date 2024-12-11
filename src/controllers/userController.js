@@ -288,7 +288,7 @@ exports.handleUploadProfilePictureController = async (req, res) => {
 exports.handleGetProfilePictureController = async (req, res) => {
   try {
     const { id } = req.user;
-    const profilePicture = await UserModel.findOne({ id });
+    const profilePicture = await UserModel.findOne({ where: { id: id } });
     if (profilePicture) {
       const profilePictureUrl = await handleGetUploadedMediaFromAWSs3Bucket(
         profilePicture.profile_picture
