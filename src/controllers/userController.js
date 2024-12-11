@@ -86,7 +86,7 @@ exports.handleRegisterUserController = async (req, res) => {
 exports.handleOTPverificationController = async (req, res) => {
   try {
     const { OTP } = req.body;
-    const user = await UserModel.findOne({ otp: OTP });
+    const user = await UserModel.findOne({ where: { otp: OTP } });
 
     if (!user) {
       return res
