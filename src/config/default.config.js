@@ -13,6 +13,8 @@ const {
   BUCKET_REGION,
   ACCESS_KEY,
   SECRET_ACCESS_KEY,
+  TWILIO_SID,
+  TWILIO_TOKEN,
 } = process.env;
 
 module.exports = {
@@ -28,4 +30,6 @@ module.exports = {
   awsBucketRegion: BUCKET_REGION,
   awsAccessKey: ACCESS_KEY,
   awsSecretAccessKey: SECRET_ACCESS_KEY,
+  accountSid: TWILIO_SID, // Replace with your Twilio Account SID
+  authToken: TWILIO_TOKEN,
 };
