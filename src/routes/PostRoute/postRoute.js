@@ -6,6 +6,7 @@ const {
   handleGetAllPosts,
   handleGetAllPostsByGenre,
   handleGetAllPostByFavorite,
+  handleGetPostsByGenre,
 } = require("../../controllers/postController");
 const {
   requireAdminPriviledge,
@@ -23,8 +24,11 @@ router.post(
   handleCreatingPost
 );
 ///////////////////////////////////////////////////////////////////////////////////////////
-//GET POSTS BY GENRE
-router.get("/genre/:genre", handleGetAllPostsByGenre);
+//GET ALL POSTS BY GENRE
+router.get("/genre/", handleGetAllPostsByGenre);
+///////////////////////////////////////////////////////////////////////////////////////////
+//GET SINGLE POSTS BY GENRE
+router.get("/genre/:genre", handleGetPostsByGenre);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST ROUTE
 router.get("/:id", handleGetSinglePost);

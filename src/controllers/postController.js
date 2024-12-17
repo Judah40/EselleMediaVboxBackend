@@ -75,6 +75,80 @@ exports.handleCreatingPost = async (req, res) => {
 ////////////////////////////////////////////////////////////////////////////
 //GET ALL POST BY GENRE
 exports.handleGetAllPostsByGenre = async (req, res) => {
+  try {
+    // Fetch all posts from the database
+    const posts = await Post.findAll({
+      attributes: {
+        exclude: [
+          "videoUrl",
+          "userId",
+          "createdAt",
+          "updatedAt",
+          "isPublic",
+          "isDeleted",
+        ],
+      },
+    });
+
+    // Check if posts exist
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No posts found",
+      });
+    }
+
+    // Group posts by tags
+    const postsByTags = {};
+
+    // Fetch images and group posts
+    await Promise.all(
+      posts.map(async (post) => {
+        const tags = JSON.parse(post.tags[0]); // Parse tags if stored as stringified JSON
+
+        // Fetch images from S3 bucket
+        const thumbnailUrl = await handleGetUploadedMediaFromAWSs3Bucket(
+          post.thumbnailUrl
+        );
+        const bannerUrl = await handleGetUploadedMediaFromAWSs3Bucket(
+          post.bannerUrl
+        );
+
+        tags.forEach((tag) => {
+          if (!postsByTags[tag]) {
+            postsByTags[tag] = [];
+          }
+          postsByTags[tag].push({
+            id: post.id,
+            postId: post.postId,
+            content: post.content,
+            thumbnailUrl, // Add fetched thumbnail URL
+            bannerUrl, // Add fetched banner URL
+            caption: post.caption,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            location: post.location,
+          });
+        });
+      })
+    );
+
+    // Return the grouped posts
+    return res.status(200).json({
+      success: true,
+      data: postsByTags,
+    });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching posts",
+    });
+  }
+};
+////////////////////////////////////////////////////////////////////////////
+//GET  POST BY GENRE
+exports.handleGetPostsByGenre = async (req, res) => {
   const { genre } = req.params;
   try {
     const postsByGenre = await Post.findAll({
@@ -150,7 +224,6 @@ exports.handleGetSinglePost = async (req, res) => {
 //GET ALL POST FOR AUTHENTICATED USERS
 exports.handleGetAllPosts = async (req, res) => {
   try {
-    const { id } = req.user;
     // Fetch all posts from the database
     const posts = await Post.findAll({
       attributes: {
