@@ -22,7 +22,7 @@ const { Server } = require("socket.io");
 app.use(express.json());
 app.use(cors());
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
-app.use("/api/v1/post", requireAuthenticatedUser, postRoute);
+app.use("/api/v1/post", postRoute);
 app.use("/api/v1/stream", requireAdminPriviledge, streamRoute);
 app.use("/api/v1/live", requireAuthenticatedUser, liveStreamRoute);
 app.use("/api/v1/comment", requireAuthenticatedUser, commentRoute);
@@ -46,7 +46,6 @@ socketIo.on("connection", (socket) => {
     console.log("A user disconnected:", socket.user.id);
   });
 });
-
 
 nms.run();
 app.use((req, res, next) => {
