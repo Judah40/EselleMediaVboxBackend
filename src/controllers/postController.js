@@ -150,25 +150,33 @@ exports.handleGetAllPostsByGenre = async (req, res) => {
 //GET  POST BY GENRE
 exports.handleGetPostsByGenre = async (req, res) => {
   const { genre } = req.params;
+  console.log('Genre:', genre);
+
   try {
+    // Convert the tags JSON string to a parseable format and search within it
     const postsByGenre = await Post.findAll({
-      where: sequelize.where(sequelize.cast(sequelize.col("tags"), "text[]"), {
-        [Op.contains]: [genre],
-      }),
+      where: sequelize.where(
+        sequelize.fn(
+          'LOWER', 
+          sequelize.cast(sequelize.col('tags'), 'text')
+        ),
+        'LIKE',
+        sequelize.fn('LOWER', `%${genre}%`)
+      )
     });
+
+    console.log('Posts by Genre:', postsByGenre);
 
     const updatedPosts = await Promise.all(
       postsByGenre.map(async (post) => {
-        // Fetch URLs for thumbnail, banner, and video in parallel
         const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
           handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
           handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
           handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
         ]);
 
-        // Return the updated post object
         return {
-          ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
+          ...post.toJSON(),
           thumbnailUrl,
           bannerUrl,
           videoUrl,
@@ -176,15 +184,16 @@ exports.handleGetPostsByGenre = async (req, res) => {
       })
     );
 
-    // res.send({updatedPosts});
     res.status(200).json({
       post: updatedPosts,
       statusCode: 200,
     });
   } catch (error) {
+    console.error('Error:', error.message);
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
 };
+
 ////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST
 exports.handleGetSinglePost = async (req, res) => {
