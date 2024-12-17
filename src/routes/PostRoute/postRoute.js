@@ -30,7 +30,7 @@ router.get("/genre/:genre", handleGetAllPostsByGenre);
 router.get("/:id", handleGetSinglePost);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST BY FAVORITE ROUTE
-router.get("/favorites/all", requireAuthenticatedUser, handleGetAllPostByFavorite);
+router.get("/favorites/all", handleGetAllPostByFavorite);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST ROUTE
 router.get("/", handleGetAllPosts);
