@@ -49,7 +49,7 @@ const connectDB = async (app) => {
       });
     }
   } catch (error) {
-    console.error("❌ Postgres connection error:", error.message);
+    console.error("❌ Postgres connection error:", error);
    
   }
 };
