@@ -5,7 +5,6 @@ const generateUsersJwtAccessToken = (user, userRole) => {
     id: user,
     role: userRole,
   };
-  console.log(paylod);
   try {
     return jwt.sign(paylod, jwtSecret, {
       expiresIn: "1d",

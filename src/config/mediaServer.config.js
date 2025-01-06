@@ -2,7 +2,7 @@ const NodeMediaServer = require("node-media-server");
 const { uploadLiveStreamVideoToS3asVideoOnDemand } = require("../utils/Stream/liveStremS3BucketUpload");
 const path = require("path");
 const viewerCounts = {};
-
+const fs = require('fs');
 //////////////////////////////////////////////////////////////////////////
 //MEDIA SERVER CONFIGURATION
 const config = {
@@ -33,7 +33,6 @@ const config = {
 };
 
 const nms = new NodeMediaServer(config);
-
 nms.on("prePlay", (id, StreamPath) => {
   console.log(`[NodeEvent on prePlay] id=${id} StreamPath=${StreamPath}`);
   const streamKey = StreamPath.split("/").pop();
@@ -60,8 +59,8 @@ nms.on("donePlay", (id, StreamPath) => {
 nms.on("donePublish", async (id, StreamPath) => {
   console.log(`[NodeEvent on donePublish] id=${id} StreamPath=${StreamPath}`);
   const streamKey = StreamPath.split("/").pop();
-  const recordedFilePath = path.join(__dirname, "media", "live", `${streamKey}.mp4`);
-
+// Update this line in donePublish event
+const recordedFilePath = path.join(config.http.mediaroot, "live", `${streamKey}.mp4`);
   if (fs.existsSync(recordedFilePath)) {
     console.log(`Uploading ${recordedFilePath} to S3...`);
     try {
@@ -72,5 +71,9 @@ nms.on("donePublish", async (id, StreamPath) => {
   } else {
     console.log(`No recorded file found for stream ${streamKey}`);
   }
+});
+
+nms.on('error', err => {
+  console.error('Node Media Server error:', err);
 });
 module.exports = { nms, viewerCounts };
