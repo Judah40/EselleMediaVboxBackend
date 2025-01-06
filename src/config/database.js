@@ -32,6 +32,12 @@ const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
 });
 //CONNECT TO DB
 const connectDB = async (app) => {
+  console.log(  dbName,
+    dbUsername,
+    dbPassword,
+    dbPort,
+    dbUrl,
+    appPort,)
   try {
  
           if (app) {
@@ -39,16 +45,12 @@ const connectDB = async (app) => {
       console.log("Database connected successfully");
       app.listen(appPort, () => {
         console.log(`🚀 Server Listening on port ${appPort}`);
+       
       });
     }
   } catch (error) {
     console.error("❌ Postgres connection error:", error.message);
-    console.log(  dbName,
-      dbUsername,
-      dbPassword,
-      dbPort,
-      dbUrl,
-      appPort,)
+   
   }
 };
 module.exports = { connectDB, sequelize };
