@@ -66,7 +66,7 @@ exports.handleRegisterUserController = async (req, res) => {
           to: phoneNumber,
         })
         .then((message) => console.log(`OTP sent! SID: ${message.sid}`))
-        .catch((error) => console.error("Error sending OTP:", error));
+        .catch((error) => console.log("Error sending OTP:", error));
       return res.status(201).json({
         message: `User Accout Created Successfully. Verify Account with the following OTP: ${otp}`,
       });
