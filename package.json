@@ -32,7 +32,7 @@
     "sequelize-cli": "^6.6.2",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",
-    "twilio": "^5.3.7",
+    "twilio": "^5.4.1",
     "uuid": "^11.0.2"
   },
   "devDependencies": {

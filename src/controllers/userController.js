@@ -10,6 +10,7 @@ const {
   handleGetUploadedMediaFromAWSs3Bucket,
 } = require("./awsController");
 const { randomName } = require("../utils/generators/generateRandomNames");
+const { TwilioClient } = require("../config/twilio.config");
 // const sendOTP = require("../utils/sms/sendOTP");
 // const { sendSMS } = require("../utils/sms/textBelt");
 ////////////////////////////////////////////////////////////////////////////
@@ -58,21 +59,14 @@ exports.handleRegisterUserController = async (req, res) => {
 
     if (newUser) {
       //SEND OTP TO USER
-      // await sendOTP(phoneNumber, otp)
-      //   .then((message) => {
-      //     console.log("Message SID:", message.sid); // Print the message SID for reference
-      //   })
-      //   .catch((error) => {
-      //     console.error("Failed to send OTP:", error);
-      //   });
-      // const message = `Your OTP code is: ${otp}`;
-      // await sendSMS(phoneNumber, message)
-      //   .then((response) => {
-      //     console.log(response);
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
+      await TwilioClient.messages
+        .create({
+          body: `Your verification code is ${otp}. It is valid for the next 10 minutes.`,
+          from: "+12314403488",
+          to: phoneNumber,
+        })
+        .then((message) => console.log(`OTP sent! SID: ${message.sid}`))
+        .catch((error) => console.error("Error sending OTP:", error));
       return res.status(201).json({
         message: `User Accout Created Successfully. Verify Account with the following OTP: ${otp}`,
       });
@@ -86,7 +80,7 @@ exports.handleRegisterUserController = async (req, res) => {
 exports.handleOTPverificationController = async (req, res) => {
   try {
     const { OTP } = req.body;
-    const user = await UserModel.findOne({ where: { otp: OTP } });
+    const user = await UserModel.findOne({ where: { otp: OTP.toString() } });
 
     if (!user) {
       return res
