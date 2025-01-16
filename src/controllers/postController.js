@@ -30,8 +30,8 @@ exports.handleCreatingPost = async (req, res) => {
 
     const resizedThumbnail = await sharp(thumbnails.buffer)
       .resize({
-        height: 150,
-        width: 150,
+        height: 1920,
+        width: 1080,
         fit: "contain",
       })
       .toBuffer();

@@ -88,7 +88,7 @@ exports.handleOTPverificationController = async (req, res) => {
         .json({ message: "Invalid OTP. Please try again with a valid OTP" });
     }
 
-    await user.update({ isActive: true, otp: "" }, { new: true });
+    await user.update({ otp: "" }, { new: true });
     const userId = user.id;
     console.log(userId);
     const token = generateUsersJwtAccessToken(userId);
@@ -107,7 +107,10 @@ exports.handlePasswordSetupController = async (req, res) => {
     const user = await UserModel.findByPk(id);
     // res.status(200).json({ user });
     const hashPassword = await handleHashPassword(password);
-    await user.update({ password: hashPassword }, { new: true });
+    await user.update(
+      { isActive: true, password: hashPassword },
+      { new: true }
+    );
     return res.status(201).json({
       message: "password successfully created",
       statusCode: 201,
