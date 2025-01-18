@@ -1,6 +1,6 @@
 const { socketIo } = require("../config/socketConfig");
 const { Comment } = require("../models/comment.model");
-const {vodComment} = require("../models/comments.vod.model");
+const { vodComment } = require("../models/comments.vod.model");
 ////////////////////////////////////////////////////////////////
 // CREATE COMMENTS FOR A LIVE
 exports.handleCreateComment = async (req, res) => {
@@ -120,7 +120,7 @@ exports.handleCreateCommentForVod = async (req, res) => {
       status: error.status,
     });
   }
-}
+};
 
 ////////////////////////////////////////////////////////////////
 // GET ALL COMMENTS FOR A VIDEOS ON DEMAND
@@ -131,14 +131,9 @@ exports.handleGetAllCommentsForVod = async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: "Vod ID is required" });
     }
-    const comments = await vodComment.findAll(
-      {
-        where: { vodId: id },
-      },
-      {
-        attribute: ["id", "updatedAt"],
-      }
-    );
+    const comments = await vodComment.findAll({
+      where: { vodId: id },
+    });
 
     if (comments.length === 0) {
       res.status(200).json({
@@ -156,7 +151,7 @@ exports.handleGetAllCommentsForVod = async (req, res) => {
       status: error.status,
     });
   }
-}
+};
 
 ////////////////////////////////////////////////////////////////
 // DELETE SINGLE COMMENT FOR A VIDEOS ON DEMAND
@@ -192,4 +187,4 @@ exports.handleDeleteCommentForVod = async (req, res) => {
       status: error.status,
     });
   }
-}
+};
