@@ -26,7 +26,7 @@ app.use("/api/v1/post", postRoute);
 app.use("/api/v1/stream", requireAdminPriviledge, streamRoute);
 app.use("/api/v1/live", requireAuthenticatedUser, liveStreamRoute);
 app.use("/api/v1/comment", commentRoute);
-app.use("/api/v1/admin", requireAdminPriviledge, AdminUserRoute);
+app.use("/api/v1/admin", AdminUserRoute);
 app.use("/api/v1/message", messageRoute);
 app.use("/api/v1/favorite", requireAuthenticatedUser, favoritesRoute);
 const server = http.createServer(app);
