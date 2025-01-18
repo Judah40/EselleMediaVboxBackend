@@ -136,7 +136,7 @@ exports.handleGetAllCommentsForVod = async (req, res) => {
         where: { vodId: id },
       },
       {
-        attribute: ["id", "createAt", "updatedAt"],
+        attribute: ["id", "updatedAt"],
       }
     );
 
