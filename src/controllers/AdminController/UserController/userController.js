@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 const User = require("../../../models/user.model");
+const { handleGetUploadedMediaFromAWSs3Bucket } = require("../../awsController");
 
 //DEACTIVATE USER CONTROLLER
 exports.handleDeactivateUser = async (req, res) => {
@@ -81,6 +82,9 @@ exports.handleGetSingleUser = async (req, res) => {
       res.status(404).json({
         message: "User not found",
       });
+    }
+    if(user.profile_picture){
+      user.profile_picture = await handleGetUploadedMediaFromAWSs3Bucket(user.profile_picture);
     }
     res.status(200).json({ data: user });
   } catch (error) {
