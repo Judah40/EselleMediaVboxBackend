@@ -77,6 +77,9 @@ exports.handleGetSingleUser = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { id: id },
+      attributes: {
+        exclude: ["createdAt", "updatedAt", "password", "id"],
+      },
     });
     if (!user) {
       res.status(404).json({
