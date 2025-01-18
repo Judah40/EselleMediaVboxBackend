@@ -3,20 +3,30 @@ const {
   handleCreateComment,
   handleGetAllComments,
   handleDeleteComment,
+  handleDeleteCommentForVod,
+  handleCreateCommentForVod,
+  handleGetAllCommentsForVod,
 } = require("../../controllers/commentController");
-const { CommentValidator } = require("../../utils/validators/commentValidator");
+const { CommentValidator, vodCommentValidator } = require("../../utils/validators/commentValidator");
 const router = express.Router();
 
 ////////////////////////////////////////////////////////////////
-//CREATE COMMENT
-router.post("/", CommentValidator, handleCreateComment);
-
+//CREATE LIVE COMMENT
+router.post("/live", CommentValidator, handleCreateComment);
 ////////////////////////////////////////////////////////////////
-//GET ALL COMMENTS
-router.get("/:id", handleGetAllComments);
+//CREATE LIVE COMMENT FOR VOD
+router.post("/vod", vodCommentValidator, handleCreateCommentForVod);
 ////////////////////////////////////////////////////////////////
-//DELETE COMMENT
-router.delete("/:commentId", handleDeleteComment);
-
+//GET ALL LIVE COMMENTS FOR VOD
+router.get("/vod/:id", handleGetAllCommentsForVod);
+////////////////////////////////////////////////////////////////
+//GET ALL LIVE COMMENTS
+router.get("/live/:id", handleGetAllComments);
+////////////////////////////////////////////////////////////////
+//DELETE SINGLE LIVE COMMENT
+router.delete("/live/:commentId", handleDeleteComment);
+////////////////////////////////////////////////////////////////
+//DELETE SINGLE LIVE COMMENT FOR VOD
+router.delete("/vod/:commentId", handleDeleteCommentForVod);
 
 module.exports = router;
