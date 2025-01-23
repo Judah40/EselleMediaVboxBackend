@@ -17,9 +17,9 @@ router.put("/user/activate/:id", requireAdminPriviledge, handleActivateUser);
 
 ////////////////////////////////////////////////////////////////
 //GET ALL USER
-router.get("/user", handleGetAllUsers);
+router.get("/user/:id", handleGetAllUsers);
 
 ////////////////////////////////////////////////////////////////
 //GET SINGLE USER
-router.get("/user/:id", handleGetSingleUser);
+router.get("/user/singleUser/:id", handleGetSingleUser);
 module.exports = router;
