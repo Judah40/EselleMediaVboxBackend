@@ -296,7 +296,6 @@ exports.handleGetAllPostByFavorite = async (req, res) => {
       where: { userId: id },
     });
     if (!favorites) {
-      console.log(favorites);
       return res.status(404).json({
         success: false,
         message: "No favorites found",

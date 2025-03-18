@@ -1,43 +1,27 @@
+const { createChannel } = require("../config/aws.config");
 const { Likes } = require("../models/like.model");
 const { Live } = require("../models/live.model");
 const { randomDelay } = require("../utils/Delay/delay");
+const { randomName } = require("../utils/generators/generateRandomNames");
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE LIVE STREAM DATA CONTROLLER
 exports.handleCreateLiveStream = async (req, res) => {
-  try {
-    const { title, description, streamKey, location, tags } = req.body;
-    // , thumbnail, video
-    const { id } = req.user;
-    const existingStream = await Live.findOne({ where: { liveId: streamKey } });
-    // return res.send({
-    //   existingStream,
-    // });
-    if (existingStream) {
-      return res.status(401).json({
-        message: "Stream key already in use",
-      });
-    }
-
-    const newLive = await Live.create({
-      liveId: streamKey,
-      title,
-      description,
-      location,
-      tags,
-      userId: id,
-    });
-    if (newLive) {
-      return res
-        .status(201)
-        .json({ message: "Live stream created successfully" });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message: "Error creating live stream",
-      error: error,
-      status: error.status,
-    });
-  }
+  // try {
+  //   const { title, description, streamKey, location, tags } = req.body;
+  //   // , thumbnail, video
+  //   const newChannel = createChannel();
+  //   res
+  //     .status(200)
+  //     .json({ message: "Channel created successfully", newChannel });
+  // } catch (error) {
+  //   res.status(500).json({
+  //     message: "Error creating live stream",
+  //     error: error,
+  //     status: error.status,
+  //   });
+  // }
+  const newChannel = createChannel();
+  res.status(200).json({ message: "Channel created successfully", newChannel });
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

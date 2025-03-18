@@ -12,12 +12,23 @@ const router = express.Router();
 const {
   liveStreamValidator,
 } = require("../../utils/validators/streamValidationSchema");
+const {
+  handleCreateInput,
+  createChannel,
+} = require("../../controllers/awsController");
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CREATE NEW INPUT ROUTES
+router.post("/create-channel", createChannel);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CREATE NEW INPUT ROUTES
+router.post("/create-input", handleCreateInput);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // LIVE STREAM DATA STORAGE ROUTES
 router.post(
   "/create",
-  liveStreamValidator,
-  requireAdminPriviledge,
+  // liveStreamValidator,
+  // requireAdminPriviledge,
   handleCreateLiveStream
 );
 

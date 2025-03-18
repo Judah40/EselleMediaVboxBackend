@@ -18,6 +18,10 @@ const Live = sequelize.define(
       type: Sequelize.ARRAY(Sequelize.STRING),
       allowNull: false,
     },
+    uniqueCode: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
     location: {
       type: Sequelize.STRING,
       allowNull: false,

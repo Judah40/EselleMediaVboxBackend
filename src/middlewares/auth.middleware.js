@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken")
 const { jwtSecret } = require("../config/default.config");
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //GET AUTH TOKEN
-const getAuthToken = (req) => {
+ const getAuthToken = (req) => {
   try {
     const authHeader = req.headers.authorization || null;
     if (!authHeader.startsWith("Bearer ")) {

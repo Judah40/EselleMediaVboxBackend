@@ -24,7 +24,7 @@ app.use(cors());
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/stream", requireAdminPriviledge, streamRoute);
-app.use("/api/v1/live", requireAuthenticatedUser, liveStreamRoute);
+app.use("/api/v1/live", liveStreamRoute);
 app.use("/api/v1/comment", commentRoute);
 app.use("/api/v1/admin", AdminUserRoute);
 app.use("/api/v1/message", messageRoute);
