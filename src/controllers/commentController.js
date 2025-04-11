@@ -1,6 +1,8 @@
 const { socketIo } = require("../config/socketConfig");
 const { Comment } = require("../models/comment.model");
 const { vodComment } = require("../models/comments.vod.model");
+const User = require("../models/user.model");
+const { handleGetUploadedMediaFromAWSs3Bucket } = require("./awsController");
 ////////////////////////////////////////////////////////////////
 // CREATE COMMENTS FOR A LIVE
 exports.handleCreateComment = async (req, res) => {
@@ -141,6 +143,16 @@ exports.handleGetAllCommentsForVod = async (req, res) => {
         message: "No comments found for this live",
       });
     }
+
+    for (const comment of comments) {
+      const user = await User.findOne({ where: { id: comment.userId } });
+      const profile_picture = await handleGetUploadedMediaFromAWSs3Bucket(
+        user.profile_picture
+      );
+      comment.dataValues.profile_picture = profile_picture;
+      comment.dataValues.username = user.firstName;
+    }
+
     res
       .status(200)
       .json({ data: comments, message: "Comments fetched successfully" });
