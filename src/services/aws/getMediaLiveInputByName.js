@@ -13,6 +13,7 @@ exports.getMediaLiveInputByName = async (name) => {
       console.error("MediaLive input not found");
       return null;
     }
+    // Get the destinations for the input
     const destinations = await medialLive
       .describeInput({ InputId: input.Id })
       .promise();

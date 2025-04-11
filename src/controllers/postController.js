@@ -76,6 +76,8 @@ exports.handleCreatingPost = async (req, res) => {
 //GET ALL POST BY GENRE
 exports.handleGetAllPostsByGenre = async (req, res) => {
   try {
+    console.log("hello");
+
     // Fetch all posts from the database
     const posts = await Post.findAll({
       attributes: {
@@ -104,7 +106,26 @@ exports.handleGetAllPostsByGenre = async (req, res) => {
     // Fetch images and group posts
     await Promise.all(
       posts.map(async (post) => {
-        const tags = JSON.parse(post.tags[0]); // Parse tags if stored as stringified JSON
+        let tags = [];
+
+        try {
+          const rawTag = post.tags[0];
+
+          if (
+            typeof rawTag === "string" &&
+            rawTag.trim().startsWith("[") &&
+            rawTag.trim().endsWith("]")
+          ) {
+            // Valid JSON array string
+            tags = JSON.parse(rawTag);
+          } else {
+            // Plain string (like "comedy")
+            tags = [rawTag];
+          }
+        } catch (e) {
+          console.warn(`Invalid tag format for post ID ${post.id}:`, post.tags);
+          tags = []; // Skip grouping if parsing fails
+        }
 
         // Fetch images from S3 bucket
         const thumbnailUrl = await handleGetUploadedMediaFromAWSs3Bucket(
@@ -114,6 +135,7 @@ exports.handleGetAllPostsByGenre = async (req, res) => {
           post.bannerUrl
         );
 
+        // Group by tags
         tags.forEach((tag) => {
           if (!postsByTags[tag]) {
             postsByTags[tag] = [];
@@ -122,8 +144,8 @@ exports.handleGetAllPostsByGenre = async (req, res) => {
             id: post.id,
             postId: post.postId,
             content: post.content,
-            thumbnailUrl, // Add fetched thumbnail URL
-            bannerUrl, // Add fetched banner URL
+            thumbnailUrl,
+            bannerUrl,
             caption: post.caption,
             likeCount: post.likeCount,
             commentCount: post.commentCount,
@@ -146,26 +168,24 @@ exports.handleGetAllPostsByGenre = async (req, res) => {
     });
   }
 };
+
 ////////////////////////////////////////////////////////////////////////////
 //GET  POST BY GENRE
 exports.handleGetPostsByGenre = async (req, res) => {
   const { genre } = req.params;
-  console.log('Genre:', genre);
+  console.log("Genre:", genre);
 
   try {
     // Convert the tags JSON string to a parseable format and search within it
     const postsByGenre = await Post.findAll({
       where: sequelize.where(
-        sequelize.fn(
-          'LOWER', 
-          sequelize.cast(sequelize.col('tags'), 'text')
-        ),
-        'LIKE',
-        sequelize.fn('LOWER', `%${genre}%`)
-      )
+        sequelize.fn("LOWER", sequelize.cast(sequelize.col("tags"), "text")),
+        "LIKE",
+        sequelize.fn("LOWER", `%${genre}%`)
+      ),
     });
 
-    console.log('Posts by Genre:', postsByGenre);
+    console.log("Posts by Genre:", postsByGenre);
 
     const updatedPosts = await Promise.all(
       postsByGenre.map(async (post) => {
@@ -189,7 +209,7 @@ exports.handleGetPostsByGenre = async (req, res) => {
       statusCode: 200,
     });
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error("Error:", error.message);
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
 };

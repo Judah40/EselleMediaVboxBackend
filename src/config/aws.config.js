@@ -41,5 +41,6 @@ const S3 = new S3Client({
  */
 
 const medialLive = new AWS.MediaLive();
-
-module.exports = { S3, medialLive };
+const mediaPackage = new AWS.MediaPackage();
+const cloudFront = new AWS.CloudFront();
+module.exports = { S3, medialLive, mediaPackage, cloudFront };

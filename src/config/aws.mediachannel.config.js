@@ -6,69 +6,68 @@ const { roleArn } = require("../config/default.config");
  * @function MediaLiveConfig
  * @param {string} destinationId - The destination ID for the AWS MediaLive service.
  * @param {string} inputId - The input ID for the AWS MediaLive service.
- */
-exports.channelConfig = (
+ */ exports.channelConfig = (
   ChannelName,
   inputId,
   destinationId,
-  destinationUrl, // Single destination URL
-  arn,
-  streamName
+  mediaPackageChannelId,
+  mediaPackageIngestUrl
 ) => {
   if (!ChannelName || ChannelName.trim() === "") {
     throw new Error("ChannelName is required and cannot be empty.");
   }
 
-  console.log({ ChannelName, inputId, destinationId, destinationUrl, arn });
+  // console.log(
+  //   ChannelName,
+  //   inputId,
+  //   destinationId,
+  //   mediaPackageChannelId,
+  //   mediaPackageIngestUrl
+  // );
+
   const params = {
-    Name: ChannelName, // Channel name
-    RoleArn: roleArn, // IAM role with MediaLive permissions
+    Name: ChannelName,
+    RoleArn: roleArn, // Replace with your actual role ARN
     InputAttachments: [
       {
-        InputId: inputId, // Input ID for your live stream source (e.g., RTMP)
+        InputId: inputId,
         InputSettings: {
-          AudioSelectors: [
-            {
-              Name: "default",
-            },
-          ],
+          AudioSelectors: [{ Name: "default" }],
           DeblockFilter: "DISABLED",
           DenoiseFilter: "DISABLED",
           FilterStrength: 1,
           InputFilter: "AUTO",
           SourceEndBehavior: "CONTINUE",
-          VideoSelector: {
-            ColorSpace: "FOLLOW",
-          },
+          VideoSelector: { ColorSpace: "FOLLOW" },
         },
       },
     ],
-    ChannelClass: "SINGLE_PIPELINE", // Change from STANDARD to SINGLE_PIPELINE
+    ChannelClass: "SINGLE_PIPELINE",
     Destinations: [
       {
-        Id: `${destinationId}-1`, // First destination with ID
-        Settings: [
+        Id: `${destinationId}-1`,
+        MediaPackageSettings: [
           {
-            Url: destinationUrl, // First destination URL (same URL)
-            StreamName: `stream1-${streamName}`,
-          }
+            ChannelId: mediaPackageChannelId,
+          },
         ],
       },
     ],
     EncoderSettings: {
-      TimecodeConfig: {
-        Source: "SYSTEMCLOCK", // Required for handling timestamps
-      },
+      TimecodeConfig: { Source: "SYSTEMCLOCK" },
       VideoDescriptions: [
         {
           Name: "video1",
           CodecSettings: {
             H264Settings: {
-              Bitrate: 2000000, // Set bitrate (adjust based on quality needs)
-              RateControlMode: "CBR", // Constant Bitrate
+              Bitrate: 2000000,
+              RateControlMode: "CBR",
               FramerateControl: "SPECIFIED",
               FramerateNumerator: 30,
               FramerateDenominator: 1,
+              ParControl: "SPECIFIED", // Explicitly set PAR control
+              ParNumerator: 1, // Set numerator (e.g., 1)
+              ParDenominator: 1, // Set denominator (e.g., 1)
             },
           },
           Width: 1280,
@@ -81,7 +80,7 @@ exports.channelConfig = (
           AudioSelectorName: "default",
           CodecSettings: {
             AacSettings: {
-              Bitrate: 96000, // Adjust based on needs
+              Bitrate: 96000,
               CodingMode: "CODING_MODE_2_0",
               SampleRate: 48000,
             },
@@ -90,21 +89,22 @@ exports.channelConfig = (
       ],
       OutputGroups: [
         {
-          Name: "RTMP Group",
+          Name: "MediaPackage Group",
           OutputGroupSettings: {
-            RtmpGroupSettings: {},
+            MediaPackageGroupSettings: {
+              Destination: {
+                DestinationRefId: `${destinationId}-1`,
+              },
+            },
           },
           Outputs: [
             {
               OutputSettings: {
-                RtmpOutputSettings: {
-                  Destination: {
-                    DestinationRefId: `${destinationId}-1`,
-                  },
-                },
+                MediaPackageOutputSettings: {},
               },
               VideoDescriptionName: "video1",
               AudioDescriptionNames: ["audio1"],
+              OutputName: "MediaPackageOutput", // Added output name
             },
           ],
         },

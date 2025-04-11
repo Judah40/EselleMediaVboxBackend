@@ -4,6 +4,7 @@ const {
   handleGetSingleLiveStream,
   handleUpdateLiveStream,
   handleUpdateLikeCounter,
+  getSingleLiveStream,
 } = require("../../controllers/liveStreamController");
 const express = require("express");
 const { requireAdminPriviledge } = require("../../middlewares/auth.middleware");
@@ -15,6 +16,9 @@ const {
 const {
   handleCreateInput,
   createChannel,
+  startChannel,
+  stopChannel,
+  getLiveStreamDetail,
 } = require("../../controllers/awsController");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE NEW INPUT ROUTES
@@ -23,25 +27,22 @@ router.post("/create-channel", createChannel);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE NEW INPUT ROUTES
 router.post("/create-input", handleCreateInput);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// LIVE STREAM DATA STORAGE ROUTES
-router.post(
-  "/create",
-  // liveStreamValidator,
-  // requireAdminPriviledge,
-  handleCreateLiveStream
-);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// GET ALL LIVE STREAM DATA STORAGE ROUTES
-router.get("/", handleGetAllLiveStream);
+// START CHANNEL ROUTES
+router.post("/start-channel", startChannel);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// GET SINGLE LIVE STREAM DATA STORAGE ROUTES
-router.get("/:id", handleGetSingleLiveStream);
+// STOP CHANNEL ROUTES
+router.post("/stop-channel", stopChannel);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UPDATE LIVE STREAM DATA STORAGE ROUTES
-router.put("/:id", requireAdminPriviledge, handleUpdateLiveStream);
+// STOP CHANNEL ROUTES
+router.post("/get-channel", getLiveStreamDetail);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UPDATE LIVESTREAM LIKE COUNTER
-router.post("/like/:liveId", handleUpdateLikeCounter);
+// GET LIVE STREAM CHANNEL ROUTES
+router.post("/get-live/:id", getSingleLiveStream);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//GET LIST OF CHANNELS ROUTES
+router.get("/channel", handleGetAllLiveStream);
 module.exports = router;

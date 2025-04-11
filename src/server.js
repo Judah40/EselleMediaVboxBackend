@@ -8,6 +8,7 @@ const Comment = require("./models/comment.model");
 const like = require("./models/like.model");
 const message = require("./models/message.model");
 const favorites = require("./models/favorite.model");
+const ChannelList = require("./models/channelList.model");
 const startServer = async () => {
   connectDB(app);
 };

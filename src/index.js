@@ -17,7 +17,6 @@ const favoritesRoute = require("./routes/Favorite/favoriteRoute");
 const {
   authenticateWebSocketUser,
 } = require("./middlewares/webSocket.middleware");
-const { nms } = require("./config/mediaServer.config");
 const { Server } = require("socket.io");
 app.use(express.json());
 app.use(cors());
@@ -52,7 +51,6 @@ socketIo.on("connection", (socket) => {
   });
 });
 
-nms.run();
 app.use((req, res, next) => {
   res.status(404).json({
     message: "Route not found",

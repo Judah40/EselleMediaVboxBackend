@@ -2,12 +2,24 @@ const { S3, medialLive } = require("../config/aws.config");
 const { PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { awsBucketName } = require("../config/default.config");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { Stream } = require("twilio/lib/twiml/VoiceResponse");
 const { v4: uuidv4 } = require("uuid");
 const { channelConfig } = require("../config/aws.mediachannel.config");
 const {
   getMediaLiveInputByName,
 } = require("../services/aws/getMediaLiveInputByName");
+const {
+  handleFetchSingleChannelByName,
+} = require("../services/aws/getMediaLiveChannelByName");
+const { fetchSecurityGroup } = require("../services/aws/fetchSecurityGroup");
+const { createSecurityGroup } = require("../services/aws/createSecurityGroup");
+const {
+  createMediaPackageChannel,
+} = require("../services/aws/createMediaPackageChannel");
+const { ChannelList } = require("../models/channelList.model");
+const { where } = require("sequelize");
+const {
+  createMediaPackageEndpoint,
+} = require("../services/aws/createMediaPackageEndpoint");
 const getSignedUrlForFile = async (key) => {
   const params = {
     Bucket: awsBucketName,
@@ -66,41 +78,13 @@ exports.handleGetMultipleUploadedMediaFromAWSs3Bucket = async (keys) => {
   }
 };
 
-/////////////////////////////////////////////////////////////////
-//CREATE SECURITY GROUP COMMAND
-const createSecurityGroup = async () => {
-  const params = {
-    WhitelistRules: [{ Cidr: "0.0.0.0/0" }],
-  };
-  try {
-    const data = await medialLive.createInputSecurityGroup(params).promise();
-    console.log("Security Group created successfully:", data.SecurityGroup);
-    return data.SecurityGroup.Id;
-  } catch (error) {
-    console.error("Error creating security group:", error);
-    throw new Error("Failed to create security group");
-  }
-};
-/////////////////////////////////////////////////////////////////
-//FETCH ALREADY EXISITING SECURITY GROUP COMMAND
-const fetchSecurityGroup = async () => {
-  try {
-    const data = await medialLive.listInputSecurityGroups().promise();
-    console.log("Security Group fetched successfully:", data);
-
-    if (!data.InputSecurityGroups || data.InputSecurityGroups.length === 0) {
-      return null;
-    }
-    return data.InputSecurityGroups[0].Id;
-  } catch (error) {
-    console.error("Error fetching security group:", error);
-    throw new Error("Failed to fetch security group");
-  }
-};
 //CREATE INPUT CONTROLLER
 exports.handleCreateInput = async (req, res, next) => {
   const { name } = req.body;
 
+  if (!name) {
+    return res.status(400).json({ message: "Input name is required" });
+  }
   // Check if security group already exists
   var securityGroup = await fetchSecurityGroup();
   // If security group does not exist, create one
@@ -120,31 +104,129 @@ exports.handleCreateInput = async (req, res, next) => {
     next(error);
   }
 };
-
+///////////////////////////////////////////////// ///////////////////////////
 //CREATE CHANNEL CONTROLLER
+
 exports.createChannel = async (req, res, next) => {
   const { inputName, ChannelName } = req.body;
+
+  if (!inputName || !ChannelName) {
+    return res
+      .status(400)
+      .json({ message: "Input name and channel name are required" });
+  }
   // generate a unique destination ID
   const destinationId = uuidv4();
 
   try {
     const inputId = await getMediaLiveInputByName(inputName);
+    if (!inputId) {
+      return res.status(404).json({ message: "Input not found" });
+    }
+    const existingChannel = await ChannelList.findOne({
+      where: { channelName: ChannelName },
+    });
+    if (existingChannel) {
+      return res.status(400).json({ message: "Channel already exists" });
+    }
+    const mediaPackageChannel = await createMediaPackageChannel(destinationId);
+
     const params = channelConfig(
       ChannelName,
       inputId.InputId,
       destinationId,
-      inputId.destinationUrl,
-      inputId.arn,
-      inputId.streamName
+      mediaPackageChannel.Id,
+      mediaPackageChannel.HlsIngest.IngestEndpoints[0].Url
     );
-    if (!inputId) {
-      return res.status(404).json({ message: "Input not found" });
+
+    const mediaPackageEndpoint = await createMediaPackageEndpoint(
+      mediaPackageChannel.Id
+    );
+    if (!mediaPackageEndpoint) {
+      return res
+        .status(400)
+        .json({ message: "MediaPackage Endpoint not created" });
     }
     const data = await medialLive.createChannel(params).promise();
+    // Save the channel ID to the database
+    await ChannelList.create({
+      channelName: ChannelName,
+      channelId: destinationId,
+    });
     console.log("Channel created successfully:", data);
     return res
       .status(200)
       .json({ message: "Channel created successfully", data: data.Channel });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+//START CHANNEL CONTROLLER
+exports.startChannel = async (req, res, next) => {
+  const { channelName } = req.body;
+
+  if (!channelName) {
+    return res.status(400).json({ message: "Channel name is required" });
+  }
+  try {
+    const channelId = await handleFetchSingleChannelByName(channelName);
+    if (!channelId) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    const data = await medialLive
+      .startChannel({ ChannelId: channelId.Id })
+      .promise();
+    console.log("Channel started successfully:", data);
+    return res.status(200).json({ message: "Channel started successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+//STOP CHANNEL CONTROLLER
+exports.stopChannel = async (req, res, next) => {
+  const { channelName } = req.body;
+
+  if (!channelName) {
+    return res.status(400).json({ message: "Channel name is required" });
+  }
+  try {
+    const channelId = await handleFetchSingleChannelByName(channelName);
+    if (!channelId) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    const data = await medialLive
+      .stopChannel({ ChannelId: channelId.Id })
+      .promise();
+    console.log("Channel stopped successfully:", data);
+    return res.status(200).json({ message: "Channel stopped successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+//GET LIVESTREAM DETAIL CONTROLLER
+
+exports.getLiveStreamDetail = async (req, res, next) => {
+  const { channelName } = req.body;
+
+  if (!channelName) {
+    return res.status(400).json({ message: "Channel name is required" });
+  }
+  try {
+    const channel = await getMediaLiveInputByName(channelName);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    const data = await medialLive
+      .describeInput({ InputId: channel.InputId })
+      .promise();
+    console.log("Channel details fetched successfully:", data);
+    return res.status(200).json({ data: data });
   } catch (error) {
     next(error);
   }
