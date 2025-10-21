@@ -19,13 +19,21 @@ const Post = sequelize.define(
         key: "id",
       },
     },
-    content: {
+    description: {
       type: Sequelize.TEXT,
       allowNull: false,
     },
     thumbnailUrl: {
       type: Sequelize.STRING,
       allowNull: false,
+    },
+    duration: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    },
+    rating: {
+      type: Sequelize.FLOAT,
+      allowNull: true,
     },
     bannerUrl: {
       type: Sequelize.STRING,
@@ -35,16 +43,11 @@ const Post = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    caption: {
+    title: {
       type: Sequelize.STRING,
       allowNull: false,
     },
     likeCount: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    commentCount: {
       type: Sequelize.INTEGER,
       allowNull: false,
       defaultValue: 0,
@@ -69,7 +72,7 @@ const Post = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
-    tags: {
+    genre: {
       type: Sequelize.ARRAY(Sequelize.TEXT),
       allowNull: false,
     },

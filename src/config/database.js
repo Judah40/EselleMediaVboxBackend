@@ -1,5 +1,5 @@
 const Sequelize = require("sequelize");
-require("dotenv").config;
+require("dotenv").config(); // Fixed: added parentheses
 
 const {
   dbName,
@@ -10,39 +10,52 @@ const {
   appPort,
 } = require("./default.config");
 
-// const sequelize = new Sequelize({
-//   dialect: 'postgres',
-//   database: "vboxesselle",
-//   user: "postgres",
-//   password: "RosieDore123@",
-//   host: "localhost",
-//   port: 5432,
-//   clientMinMessages: "notice",
+const sequelize = new Sequelize({
+  dialect: "postgres",
+  database: "esselleMedia", // or use dbName from config
+  username: "esselleMedia", // Fixed: changed 'user' to 'username'
+  password: "RosieDore123", // Make sure this matches your Docker env (without @)
+  host: "localhost",
+  port: 5434, // Changed to match your new Docker port mapping
+  logging: console.log, // Enable to see SQL queries
+});
+
+// Alternative: Using your config variables
+// const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
+//   dialect: "postgres",
+//   host: dbUrl || "localhost",
+//   port: dbPort || 5434,
 // });
 
-const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
-  dialect: "postgres",
-  host: dbUrl,
-  dialectOptions: {
-    ssl: {
-      require: true, // This will help you. But you will see nwe error
-      rejectUnauthorized: false, // This line will fix new error
-    },
-  },
-});
-//CONNECT TO DB
+// CONNECT TO DB
 const connectDB = async (app) => {
-  console.log(dbName, dbUsername, dbPassword, dbPort, dbUrl, appPort);
+  console.log("Config values:", {
+    dbName,
+    dbUsername,
+    dbPassword,
+    dbPort,
+    dbUrl,
+    appPort,
+  });
+
   try {
+    // First, test authentication
+    await sequelize.authenticate();
+    console.log("✅ Database connected successfully");
+
     if (app) {
+      // Then sync models
       await sequelize.sync({ alter: true });
-      console.log("Database connected successfully");
+      console.log("✅ Models synchronized successfully");
+
+      // Start server
       app.listen(appPort, () => {
         console.log(`🚀 Server Listening on port ${appPort}`);
       });
     }
   } catch (error) {
-    console.error("❌ Postgres connection error:", error);
+    console.error("❌ Postgres connection error:", error.message);
   }
 };
+
 module.exports = { connectDB, sequelize };

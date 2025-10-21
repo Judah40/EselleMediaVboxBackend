@@ -1,0 +1,309 @@
+const { Post } = require("../../models/post.model");
+const {
+  handleGetUploadedMediaFromAWSs3Bucket,
+} = require("../../controllers/awsController");
+const sharp = require("sharp");
+const { Op } = require("sequelize");
+const { sequelize } = require("../../config/database");
+const { Favorite } = require("../../models/favorite.model");
+const {
+  attribute,
+} = require("@sequelize/core/_non-semver-use-at-your-own-risk_/expression-builders/attribute.js");
+const { postVideoService } = require("../../modules/video/video.service");
+const { getFileUrl } = require("../../services/supabase");
+////////////////////////////////////////////////////////////////////////////
+//CREATE POST
+exports.handleCreatingPost = async (req, res) => {
+  try {
+    const { title, description, genre, location } = req.body;
+    const thumbnails = req.files["thumbnails"]
+      ? req.files["thumbnails"][0]
+      : null;
+    const banner = req.files["banner"] ? req.files["banner"][0] : null;
+    const fullVideo = req.files["fullVideo"] ? req.files["fullVideo"][0] : null;
+    const { id: userId } = req.user;
+    await postVideoService(
+      title,
+      description,
+      genre,
+      location,
+      userId,
+      thumbnails,
+      banner,
+      fullVideo
+    );
+    res.status(201).json({ message: "Post created successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET ALL POST BY GENRE
+exports.handleGetAllPostsByGenre = async (req, res) => {
+  try {
+    console.log("hello");
+
+    // Fetch all posts from the database
+    const posts = await Post.findAll({
+      attributes: {
+        exclude: [
+          "videoUrl",
+          "userId",
+          "createdAt",
+          "updatedAt",
+          "isPublic",
+          "isDeleted",
+        ],
+      },
+    });
+
+    // Check if posts exist
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No posts found",
+      });
+    }
+
+    // Group posts by tags
+    const postsByTags = {};
+
+    // Fetch images and group posts
+    await Promise.all(
+      posts.map(async (post) => {
+        let tags = [];
+
+        try {
+          const rawTag = post.tags[0];
+
+          if (
+            typeof rawTag === "string" &&
+            rawTag.trim().startsWith("[") &&
+            rawTag.trim().endsWith("]")
+          ) {
+            // Valid JSON array string
+            tags = JSON.parse(rawTag);
+          } else {
+            // Plain string (like "comedy")
+            tags = [rawTag];
+          }
+        } catch (e) {
+          console.warn(`Invalid tag format for post ID ${post.id}:`, post.tags);
+          tags = []; // Skip grouping if parsing fails
+        }
+
+        // Fetch images from S3 bucket
+        const thumbnailUrl = await getFileUrl(`posts/${post.thumbnailUrl}`);
+        const bannerUrl = await getFileUrl(`posts/${post.bannerUrl}`);
+        console.log(thumbnailUrl, bannerUrl);
+        // Group by tags
+        tags.forEach((tag) => {
+          if (!postsByTags[tag]) {
+            postsByTags[tag] = [];
+          }
+          postsByTags[tag].push({
+            id: post.id,
+            postId: post.postId,
+            content: post.content,
+            thumbnailUrl,
+            bannerUrl,
+            caption: post.caption,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            location: post.location,
+          });
+        });
+      })
+    );
+
+    // Return the grouped posts
+    return res.status(200).json({
+      success: true,
+      data: postsByTags,
+    });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching posts",
+    });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET  POST BY GENRE
+exports.handleGetPostsByGenre = async (req, res) => {
+  const { genre } = req.params;
+  console.log("Genre:", genre);
+
+  try {
+    // Convert the tags JSON string to a parseable format and search within it
+    const postsByGenre = await Post.findAll({
+      where: sequelize.where(
+        sequelize.fn("LOWER", sequelize.cast(sequelize.col("tags"), "text")),
+        "LIKE",
+        sequelize.fn("LOWER", `%${genre}%`)
+      ),
+    });
+
+    console.log("Posts by Genre:", postsByGenre);
+
+    const updatedPosts = await Promise.all(
+      postsByGenre.map(async (post) => {
+        const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
+          handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
+          handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
+        ]);
+
+        return {
+          ...post.toJSON(),
+          thumbnailUrl,
+          bannerUrl,
+          videoUrl,
+        };
+      })
+    );
+
+    res.status(200).json({
+      post: updatedPosts,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET SINGLE POST
+exports.handleGetSinglePost = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const post = await Post.findOne({ where: { id: id } });
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+        statusCode: 404,
+      });
+    }
+    const thumbnailUrl = await getFileUrl(`posts/${post.thumbnailUrl}`);
+    const bannerUrl = await getFileUrl(`posts/${post.bannerUrl}`);
+    const videoUrl = await getFileUrl(`posts/${post.videoUrl}`);
+    const updatedPost = {
+      ...post.toJSON(),
+      thumbnailUrl,
+      bannerUrl,
+      videoUrl,
+    };
+    return res.status(200).json({
+      post: updatedPost,
+      statusCode: 200,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET ALL POST FOR AUTHENTICATED USERS
+exports.handleGetAllPosts = async (req, res) => {
+  try {
+    // Fetch all posts from the database
+    const posts = await Post.findAll({
+      attributes: {
+        exclude: [
+          "videoUrl",
+          "userId",
+          "createdAt",
+          "updatedAt",
+          "isPublic",
+          "isDeleted",
+        ],
+      },
+    });
+
+    // console.log(posts)
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No posts found",
+      });
+    }
+
+    // const updatedPosts = [];
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Process all posts in parallel
+    const updatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        // Fetch URLs for thumbnail, banner, and video in parallel
+        const [thumbnailUrl, bannerUrl] = await Promise.all([
+          getFileUrl(`posts/${post.thumbnailUrl}`),
+          getFileUrl(`posts/${post.bannerUrl}`),
+        ]);
+
+        // Return the updated post object
+        return {
+          ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
+          thumbnailUrl,
+          bannerUrl,
+        };
+      })
+    );
+
+    // res.send({updatedPosts});
+    res.status(200).json({
+      post: updatedPosts,
+      statusCode: 200,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//GET ALL POST BY Favorite
+exports.handleGetAllPostByFavorite = async (req, res) => {
+  const { id } = req.user;
+
+  try {
+    const favorites = await Favorite.findOne({
+      where: { userId: id },
+    });
+    if (!favorites) {
+      return res.status(404).json({
+        success: false,
+        message: "No favorites found",
+        statusCode: 404,
+      });
+    }
+    const favoritePosts = await Post.findAll({
+      where: sequelize.where(sequelize.cast(sequelize.col("tags"), "text[]"), {
+        [Op.contains]: [favorites.favorites],
+      }),
+    });
+    if (favoritePosts.length + 1 > 0) {
+      return res.status(200).json({
+        message: "Successfully gotten posts by favorites",
+        statusCode: 200,
+        data: favoritePosts,
+      });
+    }
+
+    const posts = await Post.findAll();
+    return res.status(200).json({
+      message: "No posts found",
+      statusCode: 200,
+      data: posts,
+    });
+    // res.send(id);
+    // return res.status(200).json({ favorites });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+
+  // Favorite;
+};

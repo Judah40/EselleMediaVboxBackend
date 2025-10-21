@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const { jwtSecret } = require("../config/default.config");
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //GET AUTH TOKEN
- const getAuthToken = (req) => {
+const getAuthToken = (req) => {
   try {
     const authHeader = req.headers.authorization || null;
     if (!authHeader.startsWith("Bearer ")) {
@@ -12,6 +12,7 @@ const { jwtSecret } = require("../config/default.config");
         .json({ error: "Authorization header missing or incorrect format." });
     }
 
+    console.log(authHeader.split(" ")[1]);
     return authHeader.split(" ")[1]; //
   } catch (error) {
     console.error("GET AUTH TOKEN ERROR: ", error);
@@ -24,7 +25,7 @@ const { jwtSecret } = require("../config/default.config");
 const requireAuthenticatedUser = async (req, res, next) => {
   try {
     const token = getAuthToken(req);
-
+    console.log(token);
     if (!token) {
       return res
         .status(400)
@@ -33,6 +34,7 @@ const requireAuthenticatedUser = async (req, res, next) => {
 
     const decodedToken = jwt.verify(token, jwtSecret);
 
+    console.log(decodedToken);
     req.user = {
       id: decodedToken.id,
     };
