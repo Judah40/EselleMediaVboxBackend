@@ -7,16 +7,26 @@ const {
 } = require("./channel.controller");
 const { handleUploadImages } = require("../../utils/File/imageUploader");
 const channelValidator = require("../../utils/validators/channel.validator");
+const { requireAdminPriviledge } = require("../../middlewares/auth.middleware");
 
 const router = Router();
 
 //POST
-router.post("/", handleUploadImages, createChannelController);
+router.post(
+  "/",
+  requireAdminPriviledge,
+  handleUploadImages,
+  createChannelController
+);
 
 //GET
 
 router.get("/", getAllChannelController);
-router.get("/:channelId", checkIfChannelExistsController);
+router.get(
+  "/:channelId",
+  requireAdminPriviledge,
+  checkIfChannelExistsController
+);
 //DELETE
-router.delete("/:channelId", deleteChannelController);
+router.delete("/:channelId", requireAdminPriviledge, deleteChannelController);
 module.exports = router;

@@ -25,7 +25,7 @@ app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/live", liveStreamRoute);
 app.use("/api/v1/admin", AdminUserRoute);
-app.use("/api/v1/channel", requireAdminPriviledge, channelRoute);
+app.use("/api/v1/channel", channelRoute);
 app.use("/api/v1/favorite", requireAuthenticatedUser, favoritesRoute);
 // app.use("/api/v1/match", matchRoute);
 const server = http.createServer(app);
@@ -38,3 +38,5 @@ app.use((req, res, next) => {
 });
 
 module.exports = server;
+
+// FaTe0JsAgDdNNbSt
