@@ -1,9 +1,10 @@
 const { uploadFile } = require("../../services/supabase");
 const { randomName } = require("../../utils/generators/generateRandomNames");
 const { resizedImage } = require("../../utils/resizer/postImageResizer");
-const { getVideoDurationInSeconds } = require("get-video-duration");
 const { Post } = require("../../models/post.model");
 const { Readable } = require("stream");
+const mm = require("music-metadata");
+
 exports.postVideoService = async (
   title,
   description,
@@ -20,6 +21,7 @@ exports.postVideoService = async (
 
   const resizedThumbnail = await resizedImage(1080, 1920, thumbnails.buffer);
   const resizedBanner = await resizedImage(1080, 1920, banner.buffer);
+
   await uploadFile(resizedBanner, banner.mimetype, "posts/", bannerName);
   await uploadFile(
     fullVideo.buffer,
@@ -33,16 +35,18 @@ exports.postVideoService = async (
     "posts/",
     thumbnailName
   );
-  const stream = Readable.from(fullVideo.buffer);
 
-  const duration = await getVideoDurationInSeconds(stream);
+  // Use music-metadata to get duration from buffer
+  const metadata = await mm.parseBuffer(fullVideo.buffer, fullVideo.mimetype);
+  const duration = metadata.format.duration || 0;
+
   await Post.create({
     title,
     description,
     genre,
     location,
     userId,
-    duration: parseInt(duration),
+    duration: Math.floor(duration),
     bannerUrl: bannerName,
     thumbnailUrl: thumbnailName,
     videoUrl: fullVideoName,
