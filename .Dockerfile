@@ -4,7 +4,7 @@ FROM node:latest
 
 # 2. Set Working Directory: This is the directory inside the container
 # where your application code will reside and run from.
-WORKDIR /usr/src/app
+WORKDIR /src
 
 # 3. Copy Dependency Files: Copy package.json and package-lock.json first
 # to leverage Docker's build cache. If these files don't change, Docker won't
