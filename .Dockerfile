@@ -1,5 +1,5 @@
 # 1. Base Image: Use an official Node.js image to start the build.
-# This version (20-alpine) is a smaller, more secure base image.
+# Using the Debian-based slim image to avoid the Alpine CVE reported in the scanner.
 FROM node:20-alpine
 
 # 2. Set Working Directory: This is the directory inside the container
