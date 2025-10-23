@@ -24,4 +24,4 @@ EXPOSE 3000
 
 # 7. Start Command: Define the command to run when the container starts.
 # This should match your "start" script in package.json.
-CMD [ "npm", "run", "dev" ]
+CMD [ "npm", "start" ]
