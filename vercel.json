@@ -1,6 +1,10 @@
 {
   "version": 2,
-
+  "functions": {
+    "src/server.js": {
+      "runtime": "@vercel/node@3.0.12"
+    }
+  },
   "builds": [
     {
       "src": "src/server.js",
@@ -12,5 +16,6 @@
       "src": "/(.*)",
       "dest": "src/server.js"
     }
-  ]
+  ],
+  "rootDirectory": "src"
 }
