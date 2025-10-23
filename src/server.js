@@ -10,5 +10,10 @@ const Match = require("./models/match.model");
 const startServer = async () => {
   connectDB(app);
 };
+const ffmpeg = require("fluent-ffmpeg");
+const ffmpegStatic = require("ffmpeg-static");
 
+// Set the path to the statically bundled binaries
+ffmpeg.setFfmpegPath(ffmpegStatic);
+ffmpeg.setFfprobePath(ffmpegStatic.path); // Use the path property for ffprobe
 startServer();
