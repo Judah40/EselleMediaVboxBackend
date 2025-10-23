@@ -3,7 +3,7 @@ require("dotenv").config;
 const {
   DB_HOST,
   DB_NAME,
-  APP_PORT,
+  PORT,
   DB_USERNAME,
   DB_PASSWORD,
   DB_PORT,
@@ -25,7 +25,7 @@ const {
 } = process.env;
 
 module.exports = {
-  appPort: APP_PORT,
+  appPort: PORT,
   appUrl: APP_URL,
   jwtSecret: JWT_SECRET,
   dbUrl: DB_HOST,
