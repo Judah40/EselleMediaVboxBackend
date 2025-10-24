@@ -29,7 +29,6 @@ async function uploadFile(buffer, mimetype, folder = "", videoName) {
  * Get file public URL
  */
 async function getFileUrl(path) {
-  console.log(supabaseBucket, path);
   const { data, error } = await supabaseClient.storage
     .from(supabaseBucket)
     .createSignedUrl(path, 3200);

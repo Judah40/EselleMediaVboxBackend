@@ -12,6 +12,7 @@ const liveStreamRoute = require("./modules/Live/live.route.js");
 const AdminUserRoute = require("./routes/AdminRoute/UserRoute/userRoute");
 const favoritesRoute = require("./routes/Favorite/favoriteRoute");
 const channelRoute = require("./modules/Channel/channel.route.js");
+const MyListRoute = require("./modules/MyList/mylist.route.js");
 // const matchRoute = require("./routes/matchRoute/match.route.js");
 app.use(express.json());
 app.use(
@@ -27,6 +28,7 @@ app.use("/api/v1/live", liveStreamRoute);
 app.use("/api/v1/admin", AdminUserRoute);
 app.use("/api/v1/channel", channelRoute);
 app.use("/api/v1/favorite", requireAuthenticatedUser, favoritesRoute);
+app.use("/api/v1/mylist", requireAuthenticatedUser, MyListRoute);
 // app.use("/api/v1/match", matchRoute);
 const server = http.createServer(app);
 

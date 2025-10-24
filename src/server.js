@@ -7,6 +7,7 @@ const channel = require("./models/channel.model");
 const like = require("./models/like.model");
 const favorites = require("./models/favorite.model");
 const Match = require("./models/match.model");
+const MyList = require("./models/MyList.model");
 const startServer = async () => {
   connectDB(app);
 };
