@@ -7,14 +7,21 @@ exports.saveLiveDetails = async ({
   description,
   banner,
 }) => {
+  console.log("these are the datas", {
+    streamName,
+    title,
+    description,
+    banner,
+  });
   const { path } = await uploadFile(banner.buffer, banner.mimetype, "live/");
 
+  console.log(path);
   if (!path) {
     throw new Error("COULD NOT UPLOAD BANNER");
   }
 
   return await Match.create({
-    streamName,
+    channelId: streamName,
     title,
     description,
     banner: path,

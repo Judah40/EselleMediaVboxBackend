@@ -24,7 +24,10 @@ const {
   userLoginValidator,
 } = require("../../utils/validators/userValidatorSchema");
 
-const { handleUploadImage } = require("../../utils/File/imageUploader");
+const {
+  handleUploadImage,
+  uploadProfilePicture,
+} = require("../../utils/File/imageUploader");
 ///////////////////////////////////////////////////////////////////////////////////////////
 //OTP VERIFICATION ROUTE
 router.post("/verify-OTP", handleOTPverificationController);
@@ -67,7 +70,7 @@ router.put(
 //UPLOAD PROFILE PICTURE
 router.post(
   "/profile-picture",
-  handleUploadImage,
+  uploadProfilePicture,
   requireAuthenticatedUser,
   handleUploadProfilePictureController
 );

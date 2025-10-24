@@ -8,7 +8,7 @@ const {
 const cors = require("cors");
 const userRoute = require("./modules/Auth/auth.route.js");
 const postRoute = require("./modules/video/video.route.js");
-const liveStreamRoute = require("./routes/LiveStreamDataRoute/LiveStreamDataRoute");
+const liveStreamRoute = require("./modules/Live/live.route.js");
 const AdminUserRoute = require("./routes/AdminRoute/UserRoute/userRoute");
 const favoritesRoute = require("./routes/Favorite/favoriteRoute");
 const channelRoute = require("./modules/Channel/channel.route.js");

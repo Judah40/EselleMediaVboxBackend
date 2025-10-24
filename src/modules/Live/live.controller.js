@@ -1,13 +1,29 @@
-const { saveLiveDetails } = require("./live.service");
+const {
+  saveLiveDetails,
+  getLiveDetailsById,
+  getAllActiveLiveStream,
+} = require("./live.service");
 
 exports.saveLiveDetailsController = async (req, res) => {
   const { streamName, title, description } = req.body;
+  console.log(streamName);
+  if (!req.files) {
+    return res
+      .status(400)
+      .json({ message: "Banner image is required", statusCode: 400 });
+  }
+
+  if (!streamName || !title || !description) {
+    return res
+      .status(400)
+      .json({ message: "All fields are required", statusCode: 400 });
+  }
   try {
     await saveLiveDetails({
       streamName,
       title,
       description,
-      banner: req.files.banner[0],
+      banner: req.files[0],
     });
     return res.status(201).json({
       message: "Live details saved successfully",

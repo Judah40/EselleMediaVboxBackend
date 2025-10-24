@@ -4,12 +4,13 @@ const { sequelize } = require("../config/database");
 const Match = sequelize.define(
   "match",
   {
-    streamName: {
+    channelId: {
+      // Changed from streamName to channelId
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-        model: "ChannelLists",
-        key: "id",
+        model: "channels",
+        key: "channelId",
       },
     },
     title: {
