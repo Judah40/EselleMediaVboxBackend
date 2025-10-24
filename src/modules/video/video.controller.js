@@ -1,14 +1,3 @@
-const { Post } = require("../../models/post.model");
-const {
-  handleGetUploadedMediaFromAWSs3Bucket,
-} = require("../../controllers/awsController");
-const sharp = require("sharp");
-const { Op } = require("sequelize");
-const { sequelize } = require("../../config/database");
-const { Favorite } = require("../../models/favorite.model");
-const {
-  attribute,
-} = require("@sequelize/core/_non-semver-use-at-your-own-risk_/expression-builders/attribute.js");
 const {
   postVideoService,
   handleGetAllVideoService,
@@ -101,10 +90,12 @@ exports.handleGetSinglePost = async (req, res) => {
 ////////////////////////////////////////////////////////////////////////////
 //GET ALL POST FOR AUTHENTICATED USERS
 exports.handleGetAllPosts = async (req, res) => {
+  const { id: userId } = req.user;
   try {
     // Fetch all posts from the database
-    const posts = await handleGetAllPostService();
-
+    const posts = await handleGetAllPostService({
+      userId,
+    });
     // res.send({updatedPosts});
     res.status(200).json({
       posts,

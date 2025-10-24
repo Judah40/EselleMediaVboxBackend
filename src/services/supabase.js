@@ -32,7 +32,6 @@ async function getFileUrl(path) {
   const { data, error } = await supabaseClient.storage
     .from(supabaseBucket)
     .createSignedUrl(path, 3200);
-  // console.log(data, error);
   return data.signedUrl;
 }
 

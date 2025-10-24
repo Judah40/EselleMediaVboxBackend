@@ -5,6 +5,9 @@ const { Post } = require("../../models/post.model");
 const { Readable } = require("stream");
 const mm = require("music-metadata");
 const { Favorite } = require("../../models/favorite.model");
+const { videoIsPartOfList } = require("../MyList/mylist.service");
+const { sequelize } = require("../../config/database");
+const { Op } = require("sequelize");
 
 exports.postVideoService = async (
   title,
@@ -83,7 +86,7 @@ exports.handleGetAllVideoService = async () => {
       let tags = [];
 
       try {
-        const rawTag = post.tags[0];
+        const rawTag = post.genre[0];
 
         if (
           typeof rawTag === "string" &&
@@ -97,7 +100,7 @@ exports.handleGetAllVideoService = async () => {
           tags = [rawTag];
         }
       } catch (e) {
-        console.warn(`Invalid tag format for post ID ${post.id}:`, post.tags);
+        console.warn(`Invalid tag format for post ID ${post.id}:`, post.genre);
         tags = []; // Skip grouping if parsing fails
       }
 
@@ -130,22 +133,21 @@ exports.handleGetAllVideoService = async () => {
 exports.handleGetVideosByGenreService = async (genre) => {
   const postsByGenre = await Post.findAll({
     where: sequelize.where(
-      sequelize.fn("LOWER", sequelize.cast(sequelize.col("tags"), "text")),
+      sequelize.fn("LOWER", sequelize.cast(sequelize.col("genre"), "text")),
       "LIKE",
       sequelize.fn("LOWER", `%${genre}%`)
     ),
   });
 
-  console.log("Posts by Genre:", postsByGenre);
-
   return await Promise.all(
     postsByGenre.map(async (post) => {
       const [thumbnailUrl, bannerUrl, videoUrl] = await Promise.all([
-        handleGetUploadedMediaFromAWSs3Bucket(post.thumbnailUrl),
-        handleGetUploadedMediaFromAWSs3Bucket(post.bannerUrl),
-        handleGetUploadedMediaFromAWSs3Bucket(post.videoUrl),
+        getFileUrl(`posts/${post.thumbnailUrl}`),
+        getFileUrl(`posts/${post.bannerUrl}`),
+        getFileUrl(`posts/${post.videoUrl}`),
       ]);
 
+      console.log(thumbnailUrl, bannerUrl, videoUrl);
       return {
         ...post.toJSON(),
         thumbnailUrl,
@@ -171,7 +173,7 @@ exports.handleGetSingleVideoService = async (id) => {
   };
 };
 
-exports.handleGetAllPostService = async () => {
+exports.handleGetAllPostService = async ({ userId }) => {
   const posts = await Post.findAll({
     attributes: {
       exclude: [
@@ -185,7 +187,6 @@ exports.handleGetAllPostService = async () => {
     },
   });
 
-  // console.log(posts)
   if (!posts || posts.length === 0) {
     return res.status(404).json({
       success: false,
@@ -200,16 +201,19 @@ exports.handleGetAllPostService = async () => {
   return await Promise.all(
     posts.map(async (post) => {
       // Fetch URLs for thumbnail, banner, and video in parallel
-      const [thumbnailUrl, bannerUrl] = await Promise.all([
+      const [thumbnailUrl, bannerUrl, existingInMyList] = await Promise.all([
         getFileUrl(`posts/${post.thumbnailUrl}`),
         getFileUrl(`posts/${post.bannerUrl}`),
+        videoIsPartOfList({
+          videoId: post.postId,
+          userId,
+        }),
       ]);
-
-      // Return the updated post object
       return {
         ...post.toJSON(), // Ensure you convert Sequelize instances to plain objects
         thumbnailUrl,
         bannerUrl,
+        isPartOfMyList: existingInMyList.isPartOfList,
       };
     })
   );

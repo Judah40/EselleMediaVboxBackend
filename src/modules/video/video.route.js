@@ -11,6 +11,7 @@ const {
 const {
   requireAdminPriviledge,
   requireAuthenticatedUser,
+  optionalAuth,
 } = require("../../middlewares/auth.middleware");
 const { postValidator } = require("../../utils/validators/postValidatorSchema");
 const { uploadMediaMiddleware } = require("../../utils/File/mutipleUploads");
@@ -25,19 +26,19 @@ router.post(
 );
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET ALL POSTS BY GENRE
-router.get("/genre/", handleGetAllPostsByGenre);
+router.get("/genre/", optionalAuth, handleGetAllPostsByGenre);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POSTS BY GENRE
-router.get("/genre/:genre", handleGetPostsByGenre);
+router.get("/genre/:genre", optionalAuth, handleGetPostsByGenre);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //GET SINGLE POST ROUTE
-router.get("/:id", handleGetSinglePost);
+router.get("/:id", optionalAuth, handleGetSinglePost);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST BY FAVORITE ROUTE
-router.get("/favorites/all", handleGetAllPostByFavorite);
+router.get("/favorites/all", optionalAuth, handleGetAllPostByFavorite);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST ROUTE
-router.get("/", handleGetAllPosts);
+router.get("/", optionalAuth, handleGetAllPosts);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //UPDATE POST ROUTE
 router.put("/:id", async (req, res) => {});

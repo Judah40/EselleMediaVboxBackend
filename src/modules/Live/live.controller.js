@@ -6,7 +6,6 @@ const {
 
 exports.saveLiveDetailsController = async (req, res) => {
   const { streamName, title, description } = req.body;
-  console.log(streamName);
   if (!req.files) {
     return res
       .status(400)

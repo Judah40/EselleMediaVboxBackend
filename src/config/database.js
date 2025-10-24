@@ -53,14 +53,14 @@ const sequelize = new Sequelize(databaseUrl, {
 
 // CONNECT TO DB
 const connectDB = async (app) => {
-  console.log("Config values:", {
-    dbName,
-    dbUsername,
-    dbPassword,
-    dbPort,
-    dbUrl,
-    appPort,
-  });
+  // console.log("Config values:", {
+  //   dbName,
+  //   dbUsername,
+  //   dbPassword,
+  //   dbPort,
+  //   dbUrl,
+  //   appPort,
+  // });
 
   try {
     // First, test authentication

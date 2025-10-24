@@ -8,7 +8,6 @@
 //       key: "textbelt", // Free API key
 //     });
 
-//     console.log("Response:", response.data);
 //     if (response.data.success) {
 //       console.log("Message sent successfully!");
 //     } else {

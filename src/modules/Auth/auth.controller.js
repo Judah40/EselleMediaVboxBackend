@@ -44,7 +44,6 @@ exports.handleRegisterUserController = async (req, res) => {
       message: `User Accout Created Successfully. Verify Account with the following OTP: ${otp}`,
     });
   } catch (error) {
-    console.log(error.message[0]);
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
 };
@@ -88,7 +87,6 @@ exports.handleLoginUserController = async (req, res) => {
       userType: credentials.role,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
 };
@@ -183,7 +181,6 @@ exports.handleGetProfilePictureController = async (req, res) => {
   try {
     const { id } = req.user;
     const profilePicture = await getUserProfilePictureService(id);
-    console.log(profilePicture);
     return res
       .status(200)
       .json({ profilePictureUrl: profilePicture, status: 200 });

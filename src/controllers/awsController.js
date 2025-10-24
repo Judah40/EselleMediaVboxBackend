@@ -34,7 +34,6 @@ exports.handleGetUploadedMediaFromAWSs3Bucket = async (key) => {
     Key: key,
   };
   const command = new GetObjectCommand(params);
-  // console.log(command);/
   const url = await getSignedUrl(S3, command, { expiresIn: 3600 });
   return url;
 };

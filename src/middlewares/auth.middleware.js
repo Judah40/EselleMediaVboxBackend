@@ -12,7 +12,6 @@ const getAuthToken = (req) => {
         .json({ error: "Authorization header missing or incorrect format." });
     }
 
-    console.log(authHeader.split(" ")[1]);
     return authHeader.split(" ")[1]; //
   } catch (error) {
     console.error("GET AUTH TOKEN ERROR: ", error);
@@ -25,7 +24,6 @@ const getAuthToken = (req) => {
 const requireAuthenticatedUser = async (req, res, next) => {
   try {
     const token = getAuthToken(req);
-    console.log(token);
     if (!token) {
       return res
         .status(400)
@@ -33,8 +31,6 @@ const requireAuthenticatedUser = async (req, res, next) => {
     }
 
     const decodedToken = jwt.verify(token, jwtSecret);
-
-    console.log(decodedToken);
     req.user = {
       id: decodedToken.id,
     };
@@ -88,7 +84,27 @@ const requireAdminPriviledge = async (req, res, next) => {
   }
 };
 
+const optionalAuth = async (req, res, next) => {
+  try {
+    const token = getAuthToken(req);
+    if (token) {
+      const decodedToken = jwt.verify(token, jwtSecret);
+      req.user = {
+        id: decodedToken.id,
+        role: decodedToken.role,
+      };
+    } else {
+      req.user = null;
+    }
+
+    return next();
+  } catch (error) {
+    req.user = null;
+    return next();
+  }
+};
 module.exports = {
   requireAuthenticatedUser,
   requireAdminPriviledge,
+  optionalAuth,
 };

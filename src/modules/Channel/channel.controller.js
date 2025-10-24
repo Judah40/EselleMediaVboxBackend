@@ -61,7 +61,6 @@ exports.checkIfChannelExistsController = async (req, res) => {
         channelExists: false,
       });
     }
-    console.log(channelId);
     await checkIfChannelExist(channelId);
     res.status(200).json({
       channelExists: true,

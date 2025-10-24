@@ -8,7 +8,6 @@
 //       to: phoneNumber,
 //     });
 
-//     console.log(`OTP sent successfully to ${phoneNumber}`);
 //     return message;
 //   } catch (error) {
 //     console.error("Error sending OTP:", error);

@@ -92,16 +92,12 @@ exports.updateUserProfilePictureService = async (mimetype, buffer, id) => {
 
 exports.addUserProfileService = async (payload) => {
   //CHECK IF USER EXISTS
-  console.log("object 2");
 
   const user = await UserModel.findOne({
     where: { email: payload.email },
   });
 
-  console.log("object 1");
   if (user) {
-    console.log("object 3");
-
     throw new Error("USER ALREADY EXISTS");
   }
   //GENERATE OTP
@@ -153,7 +149,6 @@ exports.otpVerificationService = async (OTP) => {
   await user.update({ otp: "" }, { new: true });
 
   const userId = user.id;
-  console.log(userId);
   const token = generateUsersJwtAccessToken(userId);
   return token;
 };

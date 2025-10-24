@@ -1,6 +1,20 @@
 const { MyList } = require("../../models/MyList.model");
-const { handleGetSingleVideoService } = require("../video/video.service");
+const { Post } = require("../../models/post.model");
+const { getFileUrl } = require("../../services/supabase");
+const handleGetSingleVideoService = async (id) => {
+  const post = await Post.findOne({ where: { postId: id } });
 
+  if (!post) throw new Error("POST NOT FOUND");
+  const thumbnailUrl = await getFileUrl(`posts/${post.thumbnailUrl}`);
+  const bannerUrl = await getFileUrl(`posts/${post.bannerUrl}`);
+  const videoUrl = await getFileUrl(`posts/${post.videoUrl}`);
+  return {
+    ...post.toJSON(),
+    thumbnailUrl,
+    bannerUrl,
+    videoUrl,
+  };
+};
 exports.handleAddToMyListService = async ({ videoId, userId }) => {
   const alreadyAdded = await MyList.findOne({
     where: {
@@ -42,5 +56,18 @@ exports.handleRemoveFromMyListService = async ({ videoId, userId }) => {
     },
   });
   if (!existingList) throw new Error("VIDEO NOT IN LIST");
-  await existingList.destroy();
+  return await existingList.destroy();
+};
+
+exports.videoIsPartOfList = async ({ userId, videoId }) => {
+  if (!userId) return { isPartOfList: false };
+  const existingList = await MyList.findOne({
+    where: {
+      posts: videoId,
+      userId,
+    },
+  });
+
+  if (!existingList) return { isPartOfList: false };
+  return { isPartOfList: true };
 };
