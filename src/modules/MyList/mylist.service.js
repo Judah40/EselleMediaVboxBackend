@@ -39,7 +39,7 @@ exports.handleGetAllMyVideoListService = async (userId) => {
 
   const videos = await Promise.all(
     list.map(async (video) => {
-      const postData = await Promise.all([
+      const [postData] = await Promise.all([
         handleGetSingleVideoService(video.posts),
       ]);
       return postData;

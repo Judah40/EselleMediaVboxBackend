@@ -90,7 +90,7 @@ exports.handleGetSinglePost = async (req, res) => {
 ////////////////////////////////////////////////////////////////////////////
 //GET ALL POST FOR AUTHENTICATED USERS
 exports.handleGetAllPosts = async (req, res) => {
-  const { id: userId } = req.user;
+  const userId = req.user?.id || null; // 👈 userId is optional
   try {
     // Fetch all posts from the database
     const posts = await handleGetAllPostService({
