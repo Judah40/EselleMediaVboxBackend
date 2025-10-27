@@ -22,6 +22,8 @@ const {
   SUPABASE_BUCKET,
   CONNECTION_STRING,
   DATABASE_URL,
+  EMAIL_USER,
+  EMAIL_PASS,
 } = process.env;
 
 module.exports = {
@@ -46,4 +48,6 @@ module.exports = {
   supabaseBucket: SUPABASE_BUCKET,
   connectionString: CONNECTION_STRING,
   databaseUrl: DATABASE_URL,
+  emailUser: EMAIL_USER,
+  emailPass: EMAIL_PASS,
 };

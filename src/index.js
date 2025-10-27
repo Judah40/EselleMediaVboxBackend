@@ -22,6 +22,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/live", liveStreamRoute);

@@ -59,6 +59,11 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: true,
     },
+
+    otpExpiresAt: {
+      type: Sequelize.DATE,
+      allowNull: true,
+    },
     isActive: {
       type: Sequelize.BOOLEAN,
       defaultValue: false,

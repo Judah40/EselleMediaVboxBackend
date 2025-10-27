@@ -34,6 +34,7 @@ const sequelize = new Sequelize(databaseUrl, {
     idle: 10000,
   },
 });
+
 // const sequelize = new Sequelize({
 //   dialect: "postgres",
 //   database: "esselleMedia", // or use dbName from config

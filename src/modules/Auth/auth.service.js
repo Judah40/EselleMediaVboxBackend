@@ -1,9 +1,3 @@
-// import { chatclient } from "../../config/streamio.config";
-// import UserModel from "../../models/user.model";
-// import { getFileUrl, updateFile, uploadFile } from "../../services/supabase";
-// import { handleHashPassword } from "../../utils/generators/hashPassword";
-// import { generateOTP } from "../../utils/generators/OTPgenerator";
-
 const { chatclient } = require("../../config/streamio.config");
 const UserModel = require("../../models/user.model");
 const {
@@ -17,6 +11,10 @@ const bcrypt = require("bcrypt");
 const {
   generateUsersJwtAccessToken,
 } = require("../../utils/generators/tokenGenerator");
+const { sendOTP } = require("../../utils/Mail/sendOTP");
+const { sequelize } = require("../../config/database");
+
+//GET USER BY PRIMARY KEY
 exports.getUserByPrimaryKeyService = async (id) => {
   const user = await UserModel.findByPk(id, {
     attributes: {
@@ -31,6 +29,7 @@ exports.getUserByPrimaryKeyService = async (id) => {
   return user;
 };
 
+//UPDATE USER
 exports.updateUserProfileService = async ({ payload, id }) => {
   const user = await UserModel.findByPk(id, {
     attributes: {
@@ -64,6 +63,8 @@ exports.updateUserProfileService = async ({ payload, id }) => {
   );
 };
 
+//UPLOAD USER PROFILE PICTURE
+
 exports.uploadUserProfilePicture = async (buffer, mimetype, id) => {
   const { path, url } = await uploadFile(buffer, mimetype, "profiles/");
 
@@ -72,6 +73,7 @@ exports.uploadUserProfilePicture = async (buffer, mimetype, id) => {
   return url;
 };
 
+//GET USER PROFILE PICTURE
 exports.getUserProfilePictureService = async (id) => {
   const profilePicture = await UserModel.findOne({ where: { id: id } });
   if (!profilePicture) {
@@ -80,6 +82,8 @@ exports.getUserProfilePictureService = async (id) => {
   const profilePictureUrl = await getFileUrl(profilePicture.profile_picture);
   return profilePictureUrl;
 };
+
+//UPDATE USER PROFILE PICTURE
 
 exports.updateUserProfilePictureService = async (mimetype, buffer, id) => {
   const { profile_picture } = await UserModel.findOne({ id });
@@ -90,45 +94,77 @@ exports.updateUserProfilePictureService = async (mimetype, buffer, id) => {
   await updateFile(profile_picture, buffer, mimetype, "profiles/");
 };
 
+//ADD USER SERVICE
+
 exports.addUserProfileService = async (payload) => {
-  //CHECK IF USER EXISTS
+  const transaction = await sequelize.transaction();
 
-  const user = await UserModel.findOne({
-    where: { email: payload.email },
-  });
+  try {
+    // CHECK IF USER EXISTS
+    const existingUser = await UserModel.findOne({
+      where: { email: payload.email },
+      transaction,
+    });
 
-  if (user) {
-    throw new Error("USER ALREADY EXISTS");
+    if (existingUser) {
+      await transaction.rollback();
+      throw new Error("USER ALREADY EXISTS");
+    }
+
+    // GENERATE OTP
+    const otp = generateOTP();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // CREATE NEW USER
+    const newUser = await UserModel.create(
+      {
+        firstName: payload.firstName,
+        middleName: payload.middleName,
+        lastName: payload.lastName,
+        username: payload.username,
+        dateOfBirth: payload.dateOfBirth,
+        gender: payload.gender,
+        email: payload.email,
+        address: payload.address,
+        phoneNumber: payload.phoneNumber,
+        otp: otp,
+        otpExpiresAt: otpExpiresAt,
+      },
+      { transaction }
+    );
+
+    if (!newUser) {
+      await transaction.rollback();
+      throw new Error("USER COULD NOT BE CREATED");
+    }
+
+    // SEND OTP
+    const sendotp = await sendOTP({
+      email: payload.email,
+      otpCode: otp,
+    });
+
+    if (!sendotp.success) {
+      await transaction.rollback();
+      throw new Error(sendotp.error || "Failed to send OTP");
+    }
+
+    await transaction.commit();
+
+    return {
+      success: true,
+      userId: newUser.id,
+      otpExpiresAt: otpExpiresAt,
+      message: "User created successfully. OTP sent to email.",
+    };
+  } catch (error) {
+    await transaction.rollback();
+    console.error("User creation failed:", error);
+    throw error;
   }
-  //GENERATE OTP
-  const otp = generateOTP();
-
-  //CREATE NEW USER
-  await UserModel.create({
-    firstName: payload.firstName,
-    middleName: payload.middleName,
-    lastName: payload.lastName,
-    username: payload.username,
-    dateOfBirth: payload.dateOfBirth,
-    gender: payload.gender,
-    email: payload.email,
-    address: payload.address,
-    phoneNumber: payload.phoneNumber,
-    otp: otp,
-  });
-
-  //   if (!newUser) {
-  //       throw new Error("UNABLE TO CREATE USER")
-  //     }
-  //       await TwilioClient.messages
-  //         .create({
-  //           body: `Your verification code is ${otp}. It is valid for the next 10 minutes.`,
-  //           from: "+12314403488",
-  //           to: phoneNumber,
-  //         })
-  //         .then((message) => console.log(`OTP sent! SID: ${message.sid}`))
-  //         .catch((error) => console.log("Error sending OTP:", error));
 };
+
+//SETUP PASSWORD SERVICE
 
 exports.passwordSetupService = async (password, id) => {
   const user = await UserModel.findByPk(id);
@@ -146,13 +182,14 @@ exports.otpVerificationService = async (OTP) => {
     throw new Error("INVALID OTP. PLEASE TRY AGAIN WITH A VALID OTP");
   }
 
-  await user.update({ otp: "" }, { new: true });
+  await user.update({ otp: "", isActive: true }, { new: true });
 
   const userId = user.id;
   const token = generateUsersJwtAccessToken(userId);
   return token;
 };
 
+//USER LOGIN
 exports.userLoginService = async (email, password) => {
   const user = await UserModel.findOne({ where: { email: email } });
   if (!user) {
@@ -177,4 +214,25 @@ exports.userLoginService = async (email, password) => {
     token,
     role: user.role,
   };
+};
+
+//RESEND OTP
+
+exports.resendOTP = async (email) => {
+  const existingUser = await UserModel.findOne({
+    where: { email },
+  });
+
+  if (!existingUser) throw new Error("USER DOESN'T EXIST");
+
+  if (existingUser.isActive) throw new Error("USER ALREADY VERIFIED");
+  const otp = generateOTP();
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  const updateOTP = await existingUser.update(
+    { otp, otpExpiresAt },
+    { new: true }
+  );
+  if (!updateOTP) throw new Error("COULD NOT SEND OTP");
+  await sendOTP({ email, otpCode: otp });
 };

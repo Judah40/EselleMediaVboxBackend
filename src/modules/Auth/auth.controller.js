@@ -8,6 +8,7 @@ const {
   passwordSetupService,
   otpVerificationService,
   userLoginService,
+  resendOTP,
 } = require("./auth.service");
 // const sendOTP = require("../utils/sms/sendOTP");
 // const { sendSMS } = require("../utils/sms/textBelt");
@@ -41,7 +42,7 @@ exports.handleRegisterUserController = async (req, res) => {
 
     await addUserProfileService(payload);
     return res.status(201).json({
-      message: `User Accout Created Successfully. Verify Account with the following OTP: ${otp}`,
+      message: `USER ACCOUT CREATED SUCCESSFULLY`,
     });
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
@@ -208,4 +209,22 @@ exports.handleDeleteProfilePicController = async (req, res) => {
   });
   try {
   } catch (error) {}
+};
+
+////////////////////////////////////////////////////////////////////////////
+//HANDLE RESEND OTP
+exports.handleResendOTPcontroller = async (req, res) => {
+  const { email } = req.body;
+  if (!email)
+    return res.status(400).json({
+      message: "EMAIL IS REQUIRED",
+    });
+  try {
+    await resendOTP(email);
+    return res.status(200).json({
+      message: "OTP RESENT",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, statusCode: 500 });
+  }
 };

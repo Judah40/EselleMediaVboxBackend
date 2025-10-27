@@ -16,6 +16,7 @@ const {
   handleDeleteProfilePicController,
   handleUpdateProfilePicController,
   handleGetProfilePictureController,
+  handleResendOTPcontroller,
 } = require("./auth.controller");
 //VALIDATORS IMPORTS
 const {
@@ -94,6 +95,8 @@ router.put(
 );
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-//GET ALL USERS PROFILE ROUTE
+//RESEND OTP
+
+router.post("/resend-otp", handleResendOTPcontroller);
 
 module.exports = router;
