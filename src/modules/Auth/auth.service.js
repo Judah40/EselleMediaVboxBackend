@@ -97,8 +97,10 @@ exports.updateUserProfilePictureService = async (mimetype, buffer, id) => {
 //ADD USER SERVICE
 
 exports.addUserProfileService = async (payload) => {
+  console.log(payload);
   const transaction = await sequelize.transaction();
 
+  const date = new Date(payload.dateOfBirth);
   try {
     // CHECK IF USER EXISTS
     const existingUser = await UserModel.findOne({
@@ -122,7 +124,7 @@ exports.addUserProfileService = async (payload) => {
         middleName: payload.middleName,
         lastName: payload.lastName,
         username: payload.username,
-        dateOfBirth: payload.dateOfBirth,
+        dateOfBirth: date,
         gender: payload.gender,
         email: payload.email,
         address: payload.address,
