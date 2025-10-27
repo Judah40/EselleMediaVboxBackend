@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 const { emailUser, emailPass } = require("../../config/default.config");
 
 exports.mailClient = () => {
+  console.log(emailUser, emailPass);
   const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",

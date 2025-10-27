@@ -97,7 +97,6 @@ exports.updateUserProfilePictureService = async (mimetype, buffer, id) => {
 //ADD USER SERVICE
 
 exports.addUserProfileService = async (payload) => {
-  console.log(payload);
   const transaction = await sequelize.transaction();
 
   const date = new Date(payload.dateOfBirth);
