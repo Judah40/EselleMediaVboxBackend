@@ -146,8 +146,6 @@ exports.handleGetVideosByGenreService = async (genre) => {
         getFileUrl(`posts/${post.bannerUrl}`),
         getFileUrl(`posts/${post.videoUrl}`),
       ]);
-
-      console.log(thumbnailUrl, bannerUrl, videoUrl);
       return {
         ...post.toJSON(),
         thumbnailUrl,

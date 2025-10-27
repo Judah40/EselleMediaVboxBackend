@@ -2,8 +2,6 @@ const { emailUser } = require("../../config/default.config");
 const { mailClient } = require("./client");
 
 exports.sendOTP = async ({ email, otpCode }) => {
-  console.log(otpCode);
-
   try {
     const mailOptions = {
       from: `Vbox Esselle Media <${emailUser}>`,
@@ -145,8 +143,6 @@ exports.sendOTP = async ({ email, otpCode }) => {
     // Get the transporter and send mail
     const transporter = mailClient();
     await transporter.sendMail(mailOptions);
-
-    console.log("Email sent successfully");
     return {
       success: true,
     };

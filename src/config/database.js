@@ -66,13 +66,9 @@ const connectDB = async (app) => {
   try {
     // First, test authentication
     await sequelize.authenticate();
-    console.log("✅ Database connected successfully");
-
     if (app) {
       // Then sync models
       await sequelize.sync({ alter: true });
-      console.log("✅ Models synchronized successfully");
-
       // Start server
       app.listen(appPort, () => {
         console.log(`🚀 Server Listening on port ${appPort}`);
