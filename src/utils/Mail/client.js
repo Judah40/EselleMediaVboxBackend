@@ -5,11 +5,9 @@ const { emailUser, emailPass } = require("../../config/default.config");
 exports.mailClient = () => {
   console.log(emailUser, emailPass);
   const transporter = nodemailer.createTransport({
-    service: "gmail",
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // Use TLS
-    requireTLS: true,
+    port: 456,
+    secure: true, // Use TLS
     auth: {
       user: emailUser,
       pass: emailPass,
