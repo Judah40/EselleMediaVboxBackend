@@ -2,13 +2,19 @@ const { emailUser } = require("../../config/default.config");
 const { mailClient } = require("./client");
 
 exports.sendOTP = async ({ email, otpCode }) => {
-  try {
-    const mailOptions = {
-      from: `Vbox Esselle Media <${emailUser}>`,
-      to: email,
-      subject: "Verify Your Account - OTP Code",
-      text: `Your OTP code is: ${otpCode}. This code will expire in 10 minutes.`,
-      html: `
+  const maxRetries = 3;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Attempt ${attempt} to send OTP to ${email}`);
+
+      const mailOptions = {
+        from: `Vbox Esselle Media <${emailUser}>`,
+        to: email,
+        subject: "Verify Your Account - OTP Code",
+        text: `Your OTP code is: ${otpCode}. This code will expire in 10 minutes.`,
+        html: `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -138,19 +144,46 @@ exports.sendOTP = async ({ email, otpCode }) => {
         </body>
         </html>
       `,
-    };
+      };
 
-    // Get the transporter and send mail
-    const transporter = mailClient();
-    await transporter.sendMail(mailOptions);
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error("Error sending email:", error);
-    return {
-      success: false,
-      error: error.message,
-    };
+      const transporter = mailClient();
+
+      // Verify connection first with timeout
+      const verifyPromise = transporter.verify();
+      const verifyTimeout = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Connection verification timeout")),
+          15000
+        )
+      );
+      await Promise.race([verifyPromise, verifyTimeout]);
+
+      // Send email with timeout
+      const sendPromise = transporter.sendMail(mailOptions);
+      const sendTimeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Email send timeout")), 30000)
+      );
+
+      await Promise.race([sendPromise, sendTimeout]);
+
+      console.log("Email sent successfully on attempt", attempt);
+      return { success: true };
+    } catch (error) {
+      lastError = error;
+      console.error(`Attempt ${attempt} failed:`, error.message);
+
+      if (attempt < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+        console.log(`Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
   }
+
+  console.error("All email sending attempts failed. Last error:", lastError);
+  return {
+    success: false,
+    error: lastError?.message || "Failed to send email after multiple attempts",
+  };
 };
