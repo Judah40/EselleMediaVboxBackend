@@ -147,16 +147,16 @@ exports.addUserProfileService = async (payload) => {
       throw new Error("USER COULD NOT BE CREATED");
     }
 
-    // SEND OTP
-    const sendotp = await sendOTP({
-      email: payload.email,
-      otpCode: otp,
-    });
+    // // SEND OTP
+    // const sendotp = await sendOTP({
+    //   email: payload.email,
+    //   otpCode: otp,
+    // });
 
-    if (!sendotp.success) {
-      await transaction.rollback();
-      throw new Error(sendotp.error || "Failed to send OTP");
-    }
+    // if (!sendotp.success) {
+    //   await transaction.rollback();
+    //   throw new Error(sendotp.error || "Failed to send OTP");
+    // }
 
     await transaction.commit();
 
