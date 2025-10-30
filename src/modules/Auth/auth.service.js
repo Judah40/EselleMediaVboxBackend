@@ -47,17 +47,12 @@ exports.updateUserProfileService = async ({ payload, id }) => {
   if (!user) {
     throw new Error("USER NOT FOUND");
   }
+
+  console.log(user);
   await UserModel.update(
     {
-      firstName: payload.firstName || user.firstName,
-      middleName: payload.middleName || user.middleName,
-      lastName: payload.lastName || user.lastName,
-      username: payload.username || user.username,
-      email: payload.email || user.email,
-      phoneNumber: payload.phoneNumber || user.phoneNumber,
-      address: payload.address || user.address,
-      gender: payload.payload.gender || user.gender,
-      dateOfBirth: dateOfBirth || user.dateOfBirth,
+      ...user,
+      ...payload,
     },
     { where: { id: id } }
   );
@@ -66,9 +61,22 @@ exports.updateUserProfileService = async ({ payload, id }) => {
 //UPLOAD USER PROFILE PICTURE
 
 exports.uploadUserProfilePicture = async (buffer, mimetype, id) => {
-  const { path, url } = await uploadFile(buffer, mimetype, "profiles/");
+  const existingProfilePicture = await UserModel.findByPk(id);
+  if (!existingProfilePicture.profile_picture) {
+    const { path, url } = await uploadFile(buffer, mimetype, "profiles/");
+    // Save path in DB (not the URL, since URL can change if policies change)
+    await UserModel.update({ profile_picture: path }, { where: { id } });
+    return url;
+  }
+  const { path, url } = await updateFile(
+    existingProfilePicture.profile_picture,
+    buffer,
+    mimetype,
+    "profiles/"
+  );
 
-  // Save path in DB (not the URL, since URL can change if policies change)
+  console.log("existing image", path, url);
+
   await UserModel.update({ profile_picture: path }, { where: { id } });
   return url;
 };
@@ -236,4 +244,21 @@ exports.resendOTP = async (email) => {
   );
   if (!updateOTP) throw new Error("COULD NOT SEND OTP");
   await sendOTP({ email, otpCode: otp });
+};
+//RESET PASSWORD
+exports.resetPassword = async ({ id, oldPassword, newPassword }) => {
+  //CHECK IF OLD PASSWORD IS CORRECT
+  const existingUser = await UserModel.findOne({
+    where: { id },
+  });
+  if (!existingUser) throw new Error("USER DOESN'T EXIST");
+  const isPasswordValid = await bcrypt.compare(
+    oldPassword,
+    existingUser.password
+  );
+  if (!isPasswordValid) throw new Error("INVALID PASSWORD");
+  const hashPassword = await handleHashPassword(newPassword);
+  existingUser.password = hashPassword;
+
+  existingUser.save();
 };

@@ -18,11 +18,12 @@ app.use(express.json());
 app.use(
   cors({
     origin: "*", // Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/live", liveStreamRoute);

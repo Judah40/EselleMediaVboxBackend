@@ -17,6 +17,7 @@ const {
   handleUpdateProfilePicController,
   handleGetProfilePictureController,
   handleResendOTPcontroller,
+  handleUpdatepassword,
 } = require("./auth.controller");
 //VALIDATORS IMPORTS
 const {
@@ -29,6 +30,9 @@ const {
   handleUploadImage,
   uploadProfilePicture,
 } = require("../../utils/File/imageUploader");
+const {
+  userResetPasswordValidator,
+} = require("../../utils/validators/password.validator");
 ///////////////////////////////////////////////////////////////////////////////////////////
 //OTP VERIFICATION ROUTE
 router.post("/verify-OTP", handleOTPverificationController);
@@ -99,4 +103,12 @@ router.put(
 
 router.post("/resend-otp", handleResendOTPcontroller);
 
+///////////////////////////////////////////////////////////////////////////////////////////
+//RESET PASSWORD
+router.patch(
+  "/password",
+  requireAuthenticatedUser,
+  userResetPasswordValidator,
+  handleUpdatepassword
+);
 module.exports = router;

@@ -9,6 +9,7 @@ const {
   otpVerificationService,
   userLoginService,
   resendOTP,
+  resetPassword,
 } = require("./auth.service");
 // const sendOTP = require("../utils/sms/sendOTP");
 // const { sendSMS } = require("../utils/sms/textBelt");
@@ -149,6 +150,8 @@ exports.handleUpdateUserProfileController = async (req, res) => {
       address,
       phoneNumber,
     };
+
+    console.log(payload);
     await updateUserProfileService({ payload, id });
 
     return res
@@ -166,7 +169,7 @@ exports.handleUploadProfilePictureController = async (req, res) => {
     const { mimetype, buffer } = req.file;
     const { id } = req.user;
 
-    await uploadUserProfilePicture(buffer, mimetype, id);
+    const url = await uploadUserProfilePicture(buffer, mimetype, id);
     return res.status(200).json({
       message: "Profile picture uploaded successfully",
       url, // return public URL to frontend
@@ -223,6 +226,19 @@ exports.handleResendOTPcontroller = async (req, res) => {
     await resendOTP(email);
     return res.status(200).json({
       message: "OTP RESENT",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+exports.handleUpdatepassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const { id } = req.user;
+  try {
+    await resetPassword({ id, newPassword, oldPassword });
+    res.status(200).json({
+      message: "SUCCESSFULLY UPDATED PASSWORD",
     });
   } catch (error) {
     return res.status(500).json({ message: error.message, statusCode: 500 });

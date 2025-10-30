@@ -12,6 +12,7 @@ const Favorite = sequelize.define(
         model: "users",
         key: "id",
       },
+      unique: true,
     },
     favorites: {
       type: Sequelize.ARRAY(Sequelize.TEXT),
