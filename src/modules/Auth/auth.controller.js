@@ -41,10 +41,8 @@ exports.handleRegisterUserController = async (req, res) => {
       phoneNumber,
     };
 
-    await addUserProfileService(payload);
-    return res.status(201).json({
-      message: `USER ACCOUT CREATED SUCCESSFULLY`,
-    });
+    const userReg = await addUserProfileService(payload);
+    return res.status(201).json(userReg);
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }
@@ -56,7 +54,13 @@ exports.handleOTPverificationController = async (req, res) => {
     const { OTP } = req.body;
     const token = await otpVerificationService(OTP);
 
-    res.status(200).json({ message: "Phone Number Verified", token: token });
+    res
+      .status(200)
+      .json({
+        message: "Phone Number Verified",
+        token: token.token,
+        streamToken: token.streamToken,
+      });
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }

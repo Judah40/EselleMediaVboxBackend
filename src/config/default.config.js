@@ -24,6 +24,12 @@ const {
   DATABASE_URL,
   EMAIL_USER,
   EMAIL_PASS,
+  CLOUDFARE_ACCESS_TOKEN,
+  CLOUDFARE_ACCESS_KEY_ID,
+  CLOUDFARE_SECRET_ACCESS_KEY,
+  CLOUDFARE_JURISDICTION_ENDPOINT_DEFAULT,
+  CLOUDFARE_JURISDICTION_ENDPOINT_EU,
+  CLOUDFARE_BUCKET_NAME,
 } = process.env;
 
 module.exports = {
@@ -50,4 +56,10 @@ module.exports = {
   databaseUrl: DATABASE_URL,
   emailUser: EMAIL_USER,
   emailPass: EMAIL_PASS,
+  cloudfareAccessToken: CLOUDFARE_ACCESS_TOKEN,
+  cloudfareAccessKeyId: CLOUDFARE_ACCESS_KEY_ID,
+  cloudfareSecretKey: CLOUDFARE_SECRET_ACCESS_KEY,
+  cloudfareJurisdictionEndpointDefault: CLOUDFARE_JURISDICTION_ENDPOINT_DEFAULT,
+  cloudfareJurisdictionEndpointEu: CLOUDFARE_JURISDICTION_ENDPOINT_EU,
+  cloudfareBucketName: CLOUDFARE_BUCKET_NAME,
 };

@@ -9,10 +9,13 @@ const favorites = require("./models/favorite.model");
 const Match = require("./models/match.model");
 const MyList = require("./models/MyList.model");
 const otpCleanupService = require("./utils/otpCleanup");
+const {
+  profilePicturemigrateData,
+} = require("./utils/migrations/objectmigration");
 const startServer = async () => {
   connectDB(app);
 };
 
 otpCleanupService.startCleanupJob();
-
+// profilePicturemigrateData();
 startServer();

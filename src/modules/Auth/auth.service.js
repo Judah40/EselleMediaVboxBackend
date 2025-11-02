@@ -164,6 +164,7 @@ exports.addUserProfileService = async (payload) => {
       success: true,
       userId: newUser.id,
       otpExpiresAt: otpExpiresAt,
+      otp: otp,
       message: "User created successfully. OTP sent to email.",
     };
   } catch (error) {
@@ -194,8 +195,16 @@ exports.otpVerificationService = async (OTP) => {
   await user.update({ otp: "", isActive: true }, { new: true });
 
   const userId = user.id;
+  const userToUpsert = {
+    id: String(user.id),
+    name: user.firstName,
+    role: user.role === "Admin" ? "admin" : "user", // This role is crucial for permissions
+  };
+
+  await chatclient.upsertUsers([userToUpsert]);
+  const streamToken = chatclient.createToken(String(user.id));
   const token = generateUsersJwtAccessToken(userId);
-  return token;
+  return { token, streamToken };
 };
 
 //USER LOGIN

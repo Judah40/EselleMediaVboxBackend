@@ -14,18 +14,12 @@ const {
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: "postgres",
-  protocol: "postgres",
   dialectOptions: {
     ssl: {
       require: true,
       rejectUnauthorized: false,
     },
-    connectTimeout: 60000,
-    // Force IPv4
-    family: 4,
   },
-  ssl: true,
-
   logging: process.env.NODE_ENV === "development" ? console.log : false,
   pool: {
     max: 5,
@@ -54,18 +48,14 @@ const sequelize = new Sequelize(databaseUrl, {
 
 // CONNECT TO DB
 const connectDB = async (app) => {
-  // console.log("Config values:", {
-  //   dbName,
-  //   dbUsername,
-  //   dbPassword,
-  //   dbPort,
-  //   dbUrl,
-  //   appPort,
-  // });
-
   try {
     // First, test authentication
-    await sequelize.authenticate();
+    await sequelize.authenticate().catch((error) => {
+      console.log(error);
+    });
+    console.log("Config values:", {
+      databaseUrl,
+    });
     if (app) {
       // Then sync models
       await sequelize.sync({ alter: true });

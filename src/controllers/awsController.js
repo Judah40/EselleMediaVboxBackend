@@ -1,15 +1,19 @@
 const { S3 } = require("../config/aws.config");
+const { R2Client } = require("../config/r2.config");
 const { PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
-const { awsBucketName } = require("../config/default.config");
+const {
+  awsBucketName,
+  cloudfareBucketName,
+} = require("../config/default.config");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const getSignedUrlForFile = async (key) => {
   const params = {
-    Bucket: awsBucketName,
+    Bucket: cloudfareBucketName,
     Key: key,
   };
   const command = new GetObjectCommand(params);
-  const url = await getSignedUrl(S3, command, { expiresIn: 3600 }); // URL expires in 1 hour
+  const url = await getSignedUrl(R2Client, command, { expiresIn: 3600 }); // URL expires in 1 hour
   return url;
 };
 
@@ -17,24 +21,24 @@ const getSignedUrlForFile = async (key) => {
 //UPLOAD COMMAND
 exports.handleUploadImageToAWSs3bucket = async (key, body, contentType) => {
   const params = {
-    Bucket: awsBucketName,
+    Bucket: cloudfareBucketName,
     Key: key,
     Body: body,
     ContentType: contentType,
   };
   const command = new PutObjectCommand(params);
-  return await S3.send(command);
+  return await R2Client.send(command);
 };
 
 /////////////////////////////////////////////////////////////////
 //GET COMMAND
 exports.handleGetUploadedMediaFromAWSs3Bucket = async (key) => {
   const params = {
-    Bucket: awsBucketName,
+    Bucket: cloudfareBucketName,
     Key: key,
   };
   const command = new GetObjectCommand(params);
-  const url = await getSignedUrl(S3, command, { expiresIn: 3600 });
+  const url = await getSignedUrl(R2Client, command, { expiresIn: 3600 });
   return url;
 };
 /////////////////////////////////////////////////////////////////
