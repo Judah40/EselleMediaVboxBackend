@@ -80,6 +80,11 @@ const Post = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
+    viewCount: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   },
   {
     sequelize,

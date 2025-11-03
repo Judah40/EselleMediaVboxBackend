@@ -13,6 +13,8 @@ const AdminUserRoute = require("./routes/AdminRoute/UserRoute/userRoute");
 const favoritesRoute = require("./routes/Favorite/favoriteRoute");
 const channelRoute = require("./modules/Channel/channel.route.js");
 const MyListRoute = require("./modules/MyList/mylist.route.js");
+const viewRoute = require("./modules/views/views.route.js");
+
 // const matchRoute = require("./routes/matchRoute/match.route.js");
 app.use(express.json());
 app.use(
@@ -23,6 +25,7 @@ app.use(
   })
 );
 
+app.set("trust proxy", true);
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/auth", userRoute); // middleware to use the userRoute
 app.use("/api/v1/post", postRoute);
@@ -31,6 +34,7 @@ app.use("/api/v1/admin", AdminUserRoute);
 app.use("/api/v1/channel", channelRoute);
 app.use("/api/v1/favorite", requireAuthenticatedUser, favoritesRoute);
 app.use("/api/v1/mylist", requireAuthenticatedUser, MyListRoute);
+app.use("/api/v1/views", viewRoute);
 // app.use("/api/v1/match", matchRoute);
 const server = http.createServer(app);
 

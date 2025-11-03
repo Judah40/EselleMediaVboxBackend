@@ -8,6 +8,7 @@ const like = require("./models/like.model");
 const favorites = require("./models/favorite.model");
 const Match = require("./models/match.model");
 const MyList = require("./models/MyList.model");
+const views = require("./models/Views");
 const otpCleanupService = require("./utils/otpCleanup");
 const {
   profilePicturemigrateData,
