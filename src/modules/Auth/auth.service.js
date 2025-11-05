@@ -116,7 +116,6 @@ exports.addUserProfileService = async (payload) => {
     });
 
     if (existingUser) {
-      await transaction.rollback();
       throw new Error("USER ALREADY EXISTS");
     }
 
@@ -143,21 +142,8 @@ exports.addUserProfileService = async (payload) => {
     );
 
     if (!newUser) {
-      await transaction.rollback();
       throw new Error("USER COULD NOT BE CREATED");
     }
-
-    // // SEND OTP
-    // const sendotp = await sendOTP({
-    //   email: payload.email,
-    //   otpCode: otp,
-    // });
-
-    // if (!sendotp.success) {
-    //   await transaction.rollback();
-    //   throw new Error(sendotp.error || "Failed to send OTP");
-    // }
-
     await transaction.commit();
 
     return {
