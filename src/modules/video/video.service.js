@@ -122,6 +122,7 @@ exports.handleGetAllVideoService = async () => {
           likeCount: post.likeCount,
           commentCount: post.commentCount,
           location: post.location,
+          viewCount: post.viewCount,
         });
       });
     })

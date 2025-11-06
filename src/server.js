@@ -10,9 +10,9 @@ const Match = require("./models/match.model");
 const MyList = require("./models/MyList.model");
 const views = require("./models/Views");
 const otpCleanupService = require("./utils/otpCleanup");
-const {
-  profilePicturemigrateData,
-} = require("./utils/migrations/objectmigration");
+// const {
+//   profilePicturemigrateData,
+// } = require("./utils/migrations/objectmigration");
 const startServer = async () => {
   connectDB(app);
 };
