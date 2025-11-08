@@ -48,6 +48,8 @@ const userSchema = Joi.object({
         "Phone number must be a valid international format (e.g. +123456789)",
       "any.required": "Phone number is required",
     }),
+
+  password: Joi.string().min(8).max(30).required(),
 });
 
 //USER PASSWORD SETUP

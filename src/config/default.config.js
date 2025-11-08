@@ -30,6 +30,8 @@ const {
   CLOUDFARE_JURISDICTION_ENDPOINT_DEFAULT,
   CLOUDFARE_JURISDICTION_ENDPOINT_EU,
   CLOUDFARE_BUCKET_NAME,
+  MAILGUN_API_KEY,
+  MAILGUN_API_DOMAIN,
 } = process.env;
 
 module.exports = {
@@ -62,4 +64,6 @@ module.exports = {
   cloudfareJurisdictionEndpointDefault: CLOUDFARE_JURISDICTION_ENDPOINT_DEFAULT,
   cloudfareJurisdictionEndpointEu: CLOUDFARE_JURISDICTION_ENDPOINT_EU,
   cloudfareBucketName: CLOUDFARE_BUCKET_NAME,
+  mailGunApiKey: MAILGUN_API_KEY,
+  mailGunDomain: MAILGUN_API_DOMAIN,
 };

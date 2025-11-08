@@ -123,6 +123,8 @@ exports.addUserProfileService = async (payload) => {
     const otp = generateOTP();
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+    const hashPassword = await handleHashPassword(payload.password);
+
     // CREATE NEW USER
     const newUser = await UserModel.create(
       {
@@ -137,10 +139,12 @@ exports.addUserProfileService = async (payload) => {
         phoneNumber: payload.phoneNumber,
         otp: otp,
         otpExpiresAt: otpExpiresAt,
+        password: hashPassword,
       },
       { transaction }
     );
 
+    // await sendOTP({ email: payload.email, otpCode: otp });
     if (!newUser) {
       throw new Error("USER COULD NOT BE CREATED");
     }

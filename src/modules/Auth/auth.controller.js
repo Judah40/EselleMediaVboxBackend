@@ -27,6 +27,7 @@ exports.handleRegisterUserController = async (req, res) => {
       email,
       address,
       phoneNumber,
+      password,
     } = req.body;
 
     const payload = {
@@ -39,6 +40,7 @@ exports.handleRegisterUserController = async (req, res) => {
       email,
       address,
       phoneNumber,
+      password,
     };
 
     const userReg = await addUserProfileService(payload);
@@ -54,13 +56,11 @@ exports.handleOTPverificationController = async (req, res) => {
     const { OTP } = req.body;
     const token = await otpVerificationService(OTP);
 
-    res
-      .status(200)
-      .json({
-        message: "Phone Number Verified",
-        token: token.token,
-        streamToken: token.streamToken,
-      });
+    res.status(200).json({
+      message: "Phone Number Verified",
+      token: token.token,
+      streamToken: token.streamToken,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }

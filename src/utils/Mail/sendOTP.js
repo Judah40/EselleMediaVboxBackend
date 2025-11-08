@@ -1,4 +1,4 @@
-const { emailUser } = require("../../config/default.config");
+const { emailUser, mailGunDomain } = require("../../config/default.config");
 const { mailClient } = require("./client");
 
 exports.sendOTP = async ({ email, otpCode }) => {
@@ -8,10 +8,9 @@ exports.sendOTP = async ({ email, otpCode }) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Attempt ${attempt} to send OTP to ${email}`);
-
-      const mailOptions = {
+      const emailData = {
         from: `Vbox Esselle Media <${emailUser}>`,
-        to: email,
+        to: [email],
         subject: "Verify Your Account - OTP Code",
         text: `Your OTP code is: ${otpCode}. This code will expire in 10 minutes.`,
         html: `
@@ -146,20 +145,14 @@ exports.sendOTP = async ({ email, otpCode }) => {
       `,
       };
 
-      const transporter = mailClient();
-
-      // Verify connection first with timeout
-      const verifyPromise = transporter.verify();
-      const verifyTimeout = new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Connection verification timeout")),
-          15000
-        )
-      );
-      await Promise.race([verifyPromise, verifyTimeout]);
-
       // Send email with timeout
-      const sendPromise = transporter.sendMail(mailOptions);
+      const sendPromise = new Promise((resolve, reject) => {
+        mailClient.messages
+          .create(mailGunDomain, emailData)
+          .then((msg) => console.log(msg)) // logs response data
+          .catch((err) => console.error(err)); // logs any error;
+      });
+
       const sendTimeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Email send timeout")), 30000)
       );
