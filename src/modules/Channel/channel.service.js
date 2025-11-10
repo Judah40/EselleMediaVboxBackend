@@ -22,13 +22,15 @@ exports.getAllChannelService = async () => {
   const allChannel = await Channel.findAll({});
   const channels = await Promise.all(
     allChannel.map(async (values) => {
-      const { channelLogo, channelId, channelName, lastBroadcast } = values;
+      const { channelLogo, channelId, channelName, lastBroadcast, isLive } =
+        values;
       const channelLogoUrl = await getFileUrl(channelLogo);
       return {
         channelLogo: channelLogoUrl,
         channelId,
         channelName,
         lastBroadcast,
+        isLive,
       };
     })
   );
