@@ -261,3 +261,35 @@ exports.resetPassword = async ({ id, oldPassword, newPassword }) => {
 
   existingUser.save();
 };
+
+//FORGET PASSWORD
+//STEP 1: GENERATE OTP AND SEND TO EMAIL
+exports.forgetPasswordService = async (email) => {
+  const existingUser = await UserModel.findOne({
+    where: { email },
+  });
+  if (!existingUser) throw new Error("USER DOESN'T EXIST");
+
+  const otp = generateOTP();
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const updateOTP = await existingUser.update(
+    { otp, otpExpiresAt },
+    { new: true }
+  );
+  if (!updateOTP) throw new Error("COULD NOT SEND OTP");
+  // await sendOTP({ email, otpCode: otp });
+  return { otp, otpExpiresAt };
+};
+//STEP 2: RESET PASSWORD USING OTP
+exports.resetPasswordUsingOTPService = async ({ OTP, newPassword }) => {
+  const existingUser = await UserModel.findOne({
+    where: { otp: OTP.toString() },
+  });
+  if (!existingUser)
+    throw new Error("INVALID OTP. PLEASE TRY AGAIN WITH A VALID OTP");
+  const hashPassword = await handleHashPassword(newPassword);
+  existingUser.password = hashPassword;
+  existingUser.otp = "";
+  existingUser.save();
+  return { success: true };
+};

@@ -8,6 +8,7 @@ const { Favorite } = require("../../models/favorite.model");
 const { videoIsPartOfList } = require("../MyList/mylist.service");
 const { sequelize } = require("../../config/database");
 const { Op } = require("sequelize");
+const { Views } = require("../../models/Views");
 
 exports.postVideoService = async (
   title,
@@ -228,4 +229,28 @@ exports.getAllPostsByFavorite = async (userId) => {
       [Op.contains]: [favorites.favorites],
     }),
   });
+};
+
+exports.getAllWatchedVideosService = async (userId) => {
+  const watchedVideos = await Views.findAll({
+    where: { userId },
+  });
+
+  console.log("Watched Videos:", watchedVideos);
+  const videos = await Promise.all(
+    watchedVideos.map(async (view) => {
+      const post = await Post.findOne({ where: { postId: view.videoId } });
+      if (post) {
+        const thumbnailUrl = await getFileUrl(`posts/${post.thumbnailUrl}`);
+        const bannerUrl = await getFileUrl(`posts/${post.bannerUrl}`);
+        return {
+          ...post.toJSON(),
+          thumbnailUrl,
+          bannerUrl,
+        };
+      }
+      return null;
+    })
+  );
+  return videos;
 };

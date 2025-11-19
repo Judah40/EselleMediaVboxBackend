@@ -4,6 +4,7 @@ const {
   getAllChannelController,
   deleteChannelController,
   checkIfChannelExistsController,
+  updateChannelStatus,
 } = require("./channel.controller");
 const { handleUploadImages } = require("../../utils/File/imageUploader");
 const channelValidator = require("../../utils/validators/channel.validator");
@@ -29,4 +30,7 @@ router.get(
 );
 //DELETE
 router.delete("/:channelId", requireAdminPriviledge, deleteChannelController);
+
+//UPDATE
+router.patch("/:channelId", requireAdminPriviledge, updateChannelStatus);
 module.exports = router;

@@ -10,6 +10,8 @@ const {
   userLoginService,
   resendOTP,
   resetPassword,
+  resetPasswordUsingOTPService,
+  forgetPasswordService,
 } = require("./auth.service");
 // const sendOTP = require("../utils/sms/sendOTP");
 // const { sendSMS } = require("../utils/sms/textBelt");
@@ -243,6 +245,36 @@ exports.handleUpdatepassword = async (req, res) => {
     await resetPassword({ id, newPassword, oldPassword });
     res.status(200).json({
       message: "SUCCESSFULLY UPDATED PASSWORD",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+//FORGET PASSWORD CONTROLLER
+exports.handleForgetPasswordController = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const { otp, otpExpiresAt } = await forgetPasswordService(email);
+    return res.status(200).json({
+      message: "OTP SENT TO EMAIL",
+      otp,
+      otpExpiresAt,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////
+//RESET FORGET PASSWORD CONTROLLER
+exports.handleResetForgetPasswordController = async (req, res) => {
+  const { OTP, newPassword } = req.body;
+  try {
+    const token = await resetPasswordUsingOTPService({ OTP, newPassword });
+    return res.status(200).json({
+      message: "PASSWORD RESET SUCCESSFUL",
+      success: token.success,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message, statusCode: 500 });

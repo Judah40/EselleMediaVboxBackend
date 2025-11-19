@@ -5,6 +5,7 @@ const {
   handleGetSingleVideoService,
   handleGetAllPostService,
   getAllPostsByFavorite,
+  getAllWatchedVideosService,
 } = require("../../modules/video/video.service");
 const { getFileUrl } = require("../../services/supabase");
 ////////////////////////////////////////////////////////////////////////////
@@ -114,6 +115,16 @@ exports.handleGetAllPostByFavorite = async (req, res) => {
   try {
     const favorites = await getAllPostsByFavorite(id);
     return res.status(200).json({ favorites });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 500 });
+  }
+};
+
+exports.getAllWatchedVideosController = async (req, res) => {
+  const { id: userId } = req.user;
+  try {
+    const watchedVideos = await getAllWatchedVideosService(userId);
+    return res.status(200).json({ posts: watchedVideos });
   } catch (error) {
     res.status(500).json({ message: error.message, statusCode: 500 });
   }

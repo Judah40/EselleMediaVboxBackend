@@ -73,6 +73,29 @@ const signInSchema = Joi.object({
   }),
 });
 
+//FORGET PASSWORD VALIDATION SCHEMA
+const resetPasswordSchema = Joi.object({
+  OTP: Joi.string().length(6).required().messages({
+    "string.length": "OTP must be 6 characters long",
+    "any.required": "OTP is required",
+  }),
+  newPassword: Joi.string().min(8).max(30).required().messages({
+    "string.min": "New password must be at least 8 characters long",
+    "string.max": "New password must not exceed 30 characters",
+    "any.required": "New password is required",
+  }),
+});
+
+//EMAIL VALIDATION SCHEMA
+const emailSchema = Joi.object({
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      "string.email": "Please enter a valid email address",
+      "any.required": "Email is required",
+    }),
+});
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //USER REGISTRATION
 const userDetailsValidator = (req, res, next) => {
@@ -111,10 +134,36 @@ const userLoginValidator = (req, res, next) => {
   }
   next();
 };
+
+//FORGET PASSWORD VALIDATOR
+const userResetForgottenPasswordValidator = (req, res, next) => {
+  const { error } = resetPasswordSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      message: error.details.map((detail) => detail.message).join(", "),
+      statusCode: 400,
+    });
+  }
+  next();
+};
+const emailValidator = (req, res, next) => {
+  const { error } = emailSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      message: error.details.map((detail) => detail.message).join(", "),
+      statusCode: 400,
+    });
+  }
+  next();
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //EXPORT
 module.exports = {
   userDetailsValidator,
   userPasswordValidator,
   userLoginValidator,
+  userResetForgottenPasswordValidator,
+  emailValidator,
 };

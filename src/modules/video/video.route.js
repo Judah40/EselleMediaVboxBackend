@@ -7,6 +7,7 @@ const {
   handleGetAllPostsByGenre,
   handleGetAllPostByFavorite,
   handleGetPostsByGenre,
+  getAllWatchedVideosController,
 } = require("./video.controller");
 const {
   requireAdminPriviledge,
@@ -39,6 +40,15 @@ router.get("/favorites/all", optionalAuth, handleGetAllPostByFavorite);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //READ ALL POST ROUTE
 router.get("/", optionalAuth, handleGetAllPosts);
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//READ ALL POST ROUTE FOR WATCHED VIDEOS
+router.get(
+  "/watched/all",
+  requireAuthenticatedUser,
+  getAllWatchedVideosController
+);
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 //UPDATE POST ROUTE
 router.put("/:id", async (req, res) => {});

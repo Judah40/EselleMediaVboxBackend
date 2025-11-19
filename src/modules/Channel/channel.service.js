@@ -51,8 +51,8 @@ exports.deleteChannelService = async (channelId) => {
   await channel.destroy();
 };
 
-exports.updateChannelLiveStatusService = async (channelId, isLive) => {
-  const channel = await checkIfChannelExist(channelId);
-  channel.isLive = isLive;
+exports.updateChannelLiveStatusService = async ({ channelId }) => {
+  const channel = await this.checkIfChannelExist(channelId);
+  channel.isLive = !channel.isLive;
   await channel.save();
 };

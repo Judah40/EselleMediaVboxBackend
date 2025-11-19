@@ -18,12 +18,16 @@ const {
   handleGetProfilePictureController,
   handleResendOTPcontroller,
   handleUpdatepassword,
+  handleForgetPasswordController,
+  handleResetForgetPasswordController,
 } = require("./auth.controller");
 //VALIDATORS IMPORTS
 const {
   userDetailsValidator,
   userPasswordValidator,
   userLoginValidator,
+  userResetForgottenPasswordValidator,
+  emailValidator,
 } = require("../../utils/validators/userValidatorSchema");
 
 const {
@@ -110,5 +114,16 @@ router.patch(
   requireAuthenticatedUser,
   userResetPasswordValidator,
   handleUpdatepassword
+);
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//FORGET PASSWORD
+//step 1
+router.post("/forget-password", emailValidator, handleForgetPasswordController);
+//step 2
+router.patch(
+  "/reset-password",
+  userResetForgottenPasswordValidator,
+  handleResetForgetPasswordController
 );
 module.exports = router;

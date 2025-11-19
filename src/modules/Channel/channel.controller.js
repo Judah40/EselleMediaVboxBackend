@@ -3,6 +3,7 @@ const {
   getAllChannelService,
   deleteChannelService,
   checkIfChannelExist,
+  updateChannelLiveStatusService,
 } = require("./channel.service");
 
 exports.createChannelController = async (req, res) => {
@@ -53,8 +54,6 @@ exports.deleteChannelController = async (req, res) => {
 
 exports.checkIfChannelExistsController = async (req, res) => {
   const { channelId } = req.params;
-  const id = "53788771-62da-48f6-a794-283d1df596ba";
-  //   53788771-62da-48f6-a794-283d1df596ba
   try {
     if (channelId.length !== 36) {
       return res.status(200).json({
@@ -69,5 +68,22 @@ exports.checkIfChannelExistsController = async (req, res) => {
     res
       .status(500)
       .json({ message: error.message, statusCode: 404, channelExists: false });
+  }
+};
+
+exports.updateChannelStatus = async (req, res) => {
+  const { channelId } = req.params;
+  try {
+    if (channelId.length !== 36) {
+      return res.status(200).json({
+        message: "WRONG CHANNEL ID FORMAT",
+      });
+    }
+    await updateChannelLiveStatusService({ channelId });
+    res.status(200).json({
+      message: "SUCCESSFULLY UPDATED",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, statusCode: 404 });
   }
 };
